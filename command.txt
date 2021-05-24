@@ -1,0 +1,1423 @@
+ファイルの中身を見るコマンド
+cat
+ファイルを2つ以上選択するとファイルの中身を連結して表示することが出来る。
+それ以外はめちゃくちゃ重たいファイルに当たると地獄なのであまり使わない
+
+more
+ファイルの中身を表示し、スクロール出来る。末行まで表示すると終了
+lessと違ってqボタンで終了しても出力結果がターミナルに残る
+
+less
+ファイルの中身を表示し、スクロール出来る。
+viと違ってファイル全体を読み込まないので、起動が速い
+qを押すと終了。
+圧縮されたファイルの一覧を展開せずに表示できる
+
+view
+viの読み専用でモード
+どうしてもその用途で！ってときしかあまり使わない。
+lessのほうが速い
+vim -Rでvimのreadonlyモードで良い
+
+ファイルを一時的にバックアップしたい場合
+操作しているファイルと同じディレクトリに ".bk"ファイルを作成するなんて。。ということで私は/tmpと/var/tmpを使い分けて保管
+①/tmpは（tmpfsでマウントされている場合）再起動するとファイルは消えます。
+②/var/tmpは再起動してもファイルは消えません。さらに/tmpより長い期間保持されます。
+③どちらも定期的に消されます。
+（tmp➡10日、/var/tmp➡30日）
+
+grep
+grepはファイル中の文字列を検索するコマンド
+$ grep 検索文字列 ファイル名
+
+パイプ |
+コマンドの入出力をコマンドへ引き渡す処理
+例. $ ls -1 | sort -r
+lsの結果をsortコマンドで逆順ソートした結果が返る
+
+ファイルを開いた中身に、「○○」という文字列が含まれているファイルのリスト
+指定フォルダ配下を再帰検索
+find [検索対象フォルダのパス] -type f -print | xargs grep '[検索したい文字列]'
+
+grepコマンドの書式
+grep [オプション] 検索パターン ファイル
+コマンド | grep [オプション] 検索パターン
+
+---------echo----------
+echoコマンドで新規作成したファイルに出力
+$ echo 文字列 > ファイル名
+例えば簡単なスタイルシートを作るのであれば次のように入力すればよい。
+$ echo "h1{font-size:20px;}" > style.css
+
+echoコマンドでファイルに追記する
+ファイルに文字列を追記する
+$ echo 追記する文字列 >> ファイル名
+スタイルシートの２行目に２つ目のスタイルを追記
+$ echo "h2{font-size:16px;}" >> style.css
+
+''の場合、中はすべて文字列であると解釈
+""の場合は、変数が展開されて表示
+``の場合、引用符内をコマンドであるとみなして、その実行結果と置き換える
+
+
+----------隠しファイル-----------
+コマンド+shift+. で隠しファイルを表示
+
+隠しファイルも含めた全てのファイル・フォルダを表示
+$ ls -a
+
+---------AWS Apache----------
+# Apacheをインストール
+sudo yum -y install httpd
+# Apacheを起動
+sudo service httpd start
+# インスタンスを起動したときにApacheが起動するようにする
+sudo chkconfig httpd on
+# ->chconfigは自動起動について設定(on),設定解除(off),設定の確認(--list)を指定するコマンド
+
+systemctl(CentOS7系)
+service [サービス名] [命令]
+systemctl [命令] [サービス名]
+# [postfixサービスの開始]
+systemctl start postfix
+# [dovecotサービスの停止]
+systemctl stop dovecot
+# [rsyslogサービスの再起動]
+systemctl restart rsyslog
+# [squidサービスの再読み込み]
+systemctl reload squid
+# [httpdサービスの起動状態表示]
+systemctl status httpd
+# システムステータスを確認
+systemctl status httpd.service
+# 構成の確認
+systemctl list-unit-files
+
+enable = 自動起動 ON, disable = 自動起動 OFF
+
+# DNSサーバーの名前解決の確認
+nslookup IPアドレス or ドメイン
+
+--------ドメイン----------
+Aレコード
+権威DNSサーバが使う対応表（ゾーンファイル）の中身で、
+ドメイン名に対応するIPアドレス（IPv4形式）が書かれている行のこと
+例. www.example.comでIPアドレスが54.250.200.78のサーバーに接続したい場合、
+example.comに対して「www → 54.250.200.78」というAレコードを設定する
+
+NSレコード
+管理を委託しているDNSサーバの名前が書いてある行
+
+SOAレコード
+権威DNSサーバが担当しているゾーン（管理するIPとドメインの範囲）に関する情報が書いてある行
+--------docker-----------
+Docker Image
+特定の環境のスナップショット
+
+Docker Engine
+Dockerイメージ作成やコンテナ起動などを行うDockerのコアコンポーネント
+Linuxカーネルの機能を使ってメインの処理を行い、Dockerデーモンとして動作
+３つの主なコンポーネント（構成要素: docker daemon(サーバー)、REST API、docker CLI(クライアント)）を持つクライアント・サーバ型アプリケーション
+・サーバはデーモン・プロセスと呼ばれる長期間実行するプログラムの種類
+・インターフェースを規定する REST API は、プログラムがデーモンと通信に使うものであり、何をするか指示
+・コマンドライン・インターフェース（CLI）クライアント
+
+Docker daemon
+(実際にDockerコマンドを実行するところ)
+コンテナを管理する永続的なプロセスであり、
+Docker デーモンはユーザーからのDockerコマンドによる命令を実行することでコンテナの起動や再起動、停止などの管理をする
+
+Docker CLI
+Dockerのコマンドラインインターフェイス
+
+Docker Machine
+非Linux環境用にDockerの実行環境をコマンドで自動生成するコンポーネント
+
+ノード（node）
+swarm （クラスタ）に参加している Docker Engine のこと
+
+nginxを起動
+docker run -P nginx
+設定されているポートを公開(-P)
+
+DockerHub上からローカルへ取得
+docker pull 〇〇
+↓のバージョンを推奨
+docker image pull 〇〇
+
+bashのような対話的な入力が必要なプロセスも実行可能
+対話的に使用するためには -i -t オプションを使用
+例 Ubuntu上でbashを動かす
+docker run -i -t ubuntu bash
+-i はコンテナの標準入力を有効化、 -t はttyを有効化するためのオプション
+
+プログラミング言語が使用可能か検索
+(パブリックなDocker Image を探す)
+docker search <LANGUAGE>
+
+docker pull <image名> で取得していない Docker Image を docker run の際に指定すると自動的に DockerHub へ取得しに行く
+基本的にdocker pull <image名> は省略して使用することが多いですが、省略した場合 にも暗黙的に pull を行っていることを意識して使用すると良い
+
+DockerImageにはtagという"ラベル"の役割を持つ機能がある
+基本的にバージョン管理を目的に使用される
+
+Dockerは公式で3パターンの命名規則を定義しています
+
+1.Docker公式のimage
+<image名>:<タグ>
+2.ユーザーが作成したimage
+<ユーザー名>/<image名>:<タグ>
+3.非公式レジストリのimage
+<レジストリ名>/<ユーザー名>/<image名>:<タグ>
+:<タグ> の指定をしない場合は :latest タグが自動的に付与される
+また、DockerHubを使用しない場合(ECRやGCRなどの非公式レジストリ)はtagの設定が必須になります(3番のパターンを使用)
+
+1. ディレクトリを作成してviで Dockerfile へテキスト入力の開始
+2. Dockerfile の編集
+ubuntu というDocker Imageをもとに、ホストの hello.txt をコンテナの /tmp/hello.txt へコピーして、 cat /tmp/hello.txt コマンドを実行
+FROM ubuntu
+COPY hello.txt /tmp/hello.txt
+CMD ["cat", "/tmp/hello.txt"]
+-t hello オプションは「Docker Imageを hello という名前にする」という意味
+3. Docker Image のビルド&実行
+docker build コマンドで Dockerfile から Docker Image を作成
+docker build -t hello .
+-t: Docker Image名を hello という名前に指定
+. はdocker build 実行時のコンテキストの指定
+
+Dockerイメージのビルドとは、ベースとなるイメージに対して、何らかの機能を加えて、自分独自のイメージを作り出すことを指す
+# imageをビルドする
+docker image build -t image名[:タグ名] Dockerfile配置ディレクトリのパス
+$ docker image build -t example/echo:latest .
+
+ローカルで開発したimageをステージングや本番環境で動かすにはDockerレジストリにアップロードする必要がある
+(Dockerレジストリ = Docker Image を保存するための場所)
+
+docker login #docker hub へログイン
+
+Docker Image の命名
+Docker Hub にアップロードするためにはDocker Hub のDocker Image の命名規則に則る必要あり
+docker tag で命名
+ユーザーのオリジナルimageは <USER NAME>/<IMAGE NAME>:<TAG> という命名にします( :<TAG> は省略可能で、省略すると :latest と命名)
+
+# imageのタグの変更
+docker image tag 元イメージ[:タグ] 新イメージ[:タグ]
+
+# 停止中のコンテナの削除
+docker container prune
+
+# コンテナの削除
+docker container rm コンテナID
+-f: 実行中のコンテナを強制的に削除
+
+# Imageをビルド
+docker image build -t image名[:タグ名] Dockerfile配置ディレクトリのパス
+-t: imageの名前を指定(ほぼ必須)
+-f: Dockerfile以外の名前のDockerfileを使う
+
+# イメージをダウンロード
+docker image pull [option] リポジトリ名[:タグ名]
+
+# 実行中のコンテナのImageやその他不必要なイメージを削除
+docker image prune [options]
+
+# イメージを削除
+docker image rm IMAGE
+
+# 利用されていないコンテナ,イメージ,ボリューム,ネットワークといったすべてのDockerリソースを削除
+$ docker system prune
+
+# Docker Hubのリポジトリを検索
+docker search [option] 検索キーワード
+
+* FROM
+イメージビルドのための処理ステージを初期化
+ベースとなるDocker Image を指定
+例. FROM node
+
+* ASオプション
+新たなビルドステージに対しては名前をつけることができる
+この名前は後続の FROM や COPY --from=<name|index> 命令において利用することができ、
+このビルドステージにおいてビルドされたイメージを参照する
+例.
+FROM <image>[:<tag>] [AS <name>]
+または
+FROM <image>[@<digest>] [AS <name>]
+
+* ENV
+Docker内で使用する環境変数を定義します。
+NODE_ENV のようなDockerの起動時にデフォルトで定義されていてほしい環境変数を定義すると良い
+例. ENV NODE_ENV=production
+
+* WORKDIR
+Dockerfileでコマンドを実行する際に基準となるディレクトリを設定
+存在しないディレクトリを指定すると自動的にディレクトリが作成
+デフォルトだと / が設定されているため、最悪の場合既存のディレクトリを上書きしてしまいコンテナが起動しなくなる
+例. WORKDIR /scripts
+
+* COPY
+Docker内へホストのファイル/ディレクトリをコピーします
+COPY は基本的に2つの引数を設定します
+例.
+COPY [ホスト側のディレクトリ] [Docker側のディレクトリ]
+
+ホスト側のディレクトリは docker build . で指定したディレクトリです。この場合 . を指定しており、カレントディレクトリが参照されます。
+Docker側は WORKDIR で定義されたディレクトリを参照します
+例. COPY . .
+
+* RUN
+Docker内でコマンドを実行
+コンテナへ依存するライブラリやパッケージのインストールやユーザーの設定などの処理を実行
+
+* USER
+作成したDocker Image を起動時にログインするユーザーを指定
+デフォルトは root が設定されているため、セキュリティリスクを回避するために別のユーザーを指定するのが良い
+例. USER app
+
+* CMD
+Docker起動時にデフォルトで実行されるコマンドを定義
+Dockerはここで設定したコマンドがフォアグラウンドで実行されている間が生存期間
+そのため、プロセスの処理が走っている間はフォアグラウンドで実行するように記述(バックグラウンドで起動するとDockerが終了する)
+例. CMD ["npm", "run", "start"]
+
+RUNと似ていて、ビルド時のDocker内で実行するプロセスを定義する
+RUNとCMDの違いは、RUNはアプリケーションの更新や配置を行い、CMDはアプリケーションそのものを動作させます。
+
+* EXPOSE
+コンテナ起動時に公開することを想定されているポートを記述
+EXPOSE を記載することで他の人から「このDockerはポートをどの使用するのか」がわかりやすくなるため、記述すると丁寧
+例. EXPOSE 3000
+コンテナ起動時に EXPOSE で指定されたポートをホスト側へ公開するには -P オプションを使用する必要がある
+例. docker run -P nginx
+
+* VOLUME
+Data Volumeを作成するためのコマンド
+永続的なデータや共有するためのデータ、更新頻度の激しいファイルを扱うために使用される
+基本的に永続的なデータはDockerで管理することは推奨されないため、基本的にログのような更新頻度の激しいファイルで使用すると良い
+例. VOLUME ["/app/log"]
+
+* ARGS
+Dockerfileのビルド時に変数を使用するためのコマンドです。
+ビルドの前提条件/必要情報が増えると複雑化につながるため、基本的に使用しない方が良い
+ARGS ${node_env:-production}
+ENV node_env
+$ docker build --build-arg node_env=development .
+
+* ARG
+初出の FROM 命令よりも唯一前に記述できる
+FROM よりも前に宣言されている ARG は、ビルドステージ内に含まれないため、FROM以降は使えない
+例.
+ARG  CODE_VERSION=latest
+FROM base:${CODE_VERSION}
+CMD  /code/run-app
+
+初出の FROM よりも前に宣言された ARG の値を利用するには、
+ビルドステージ内において ARG 命令を、値を設定することなく利用
+例.
+ARG VERSION=latest
+FROM busybox:$VERSION
+ARG VERSION  # 値を設定せずに宣言
+RUN echo $VERSION > image_version
+
+* ADD
+COPY コマンドを拡張したコマンドです。
+主に以下の3つの機能を持ちます。
+1. COPY と同じく指定したパスをコンテナ内へコピー (COPYを使う！！)
+2. URLを指定した場合、そのURLからファイルをダウンロードし、コンテナ内へコピー
+3. コピーされたパスが .tar もしくは .tar.gz の場合解凍する
+指定されたコマンドを実行します。
+CMDとは異なり、 docker run 時に指定したコマンドを ENTRYPOINT の引数として使用します。
+
+* ENTRYPOINT
+コンテナ内で最初に動作するコマンドを指定
+
+・2つのformがある
+1. The exec form:
+ENTRYPOINT ["executable", "param1", "param2"]
+
+2. The shell form:
+ENTRYPOINT command param1 param2
+
+例.
+ENTRYPOINT ["echo"]
+コンテナ起動時において、引数に "hello" を渡すと echo "hello" が実行
+docker container run <IMAGE NAME> echo "hello!"(引数)
+と同じ動きになる(CMDは上書きされる)
+
+・ENTRYPOINTを使うとCMDの引数はENTRYPOINTで使用するファイルへの引数になる
+
+$ docker container run <IMAGE NAME> "hello!"
+=> hello!
+entrypoint は実行時のオプションで変更可能
+$ docker run --entrypoint date <IMAGE NAME>
+Mon Mar 18 22:36:19 JST 2019
+
+* ENTRYPOINT vs CMD
+基本的に CMD を使うのが良い
+ENTRYPOINT はDocker起動時のコマンドを強制する
+コマンドのラップをするDocker Image の場合は ENTRYPOINT のほうが好ましいですが、
+一般的なWebアプリケーションの場合は CMD を使用する方がユーザーにとって使いやすいDocker Image になる
+
+
+
+* Docker Container の5つの状態
+
+1. Image
+指定したDocker Image からDocker Containerを起動
+
+2. RUNNING(実行中)
+Docker Containerが起動した状態
+Dockerfileの CMD もしくは ENTRYPOINT で指定したコマンドがフォアグラウンドで動いている間がRUNNINGの状態
+docker container run [option] イメージ名[:タグ] [コマンド] [コマンド引数]
+-p: ポートフォワーディングできるようにする
+-d: バックグラウンドで動かす
+-it: 起動時にシェルに入り実行時に上書きしてCMDを他の命令に変更できる
+-i: ターミナル表示されないが入力はできる
+-t: ターミナルを表示するが入力できない
+--rm: コンテナ終了時にコンテナを終了
+--name: コンテナの名前を指定
+例. docker container run -P nginx のようにnginxを起動した場合、nginxが起動してアクセスを待ち受けてる間はRUNNINGの状態
+
+3. STOPPED
+起動したContainerが終了した状態
+
+4. PAUSED(停止)
+Containerが停止した状態
+docker pause <CONTAINER ID>
+を実行すると、現在の状態を保持して一時停止する
+docker unpause <CONTAINER ID>
+で一時停止したコンテナIDを指定することで再開することが可能
+ユーザーが明示的に指定しない限りこの状態へは遷移しない
+
+5. DELETED(破棄)
+Docker Container は明示的に削除を行わない限り停止した状態で残り続ける
+docker container rm <CONTAINER ID>
+で明示的に削除するとDELETEDの状態へ遷移し、削除される
+
+
+* Notwork
+Dockerではネットワークの扱いが重要
+先述したDocker Container の動きの通り 1コンテナでは1プロセスを動かす設計
+nginxとphp-fpmのように復数プロセスを協調して動かす必要がある時はソケットではなく、ネットワークで通信を行うことが推奨される
+デフォルトでは2種類のNetwork Driver が存在
+(bridge, host)
+
+
+現在Dockerが管理しているNetwork一覧を出力
+$ docker network ls
+
+Dockerネットワークの詳細を確認
+$ docker network inspect ネットワーク名
+
+ホスト側のネットワークの確認
+$ ip a
+
+新しいBridgeネットワークの作成
+$ docker network create myapp
+
+
+1. bridge
+Dockerを使用する際は基本的にこの Network Driver を使用
+Linuxカーネルのbridgeネットワークを使用するための機能
+->異なるセグメント同士を繋げる接続 (MACアドレスによってパケットを正しいセグメントに転送する)
+何も指定せず Docker Container を起動すると docker0 という名前のbridgeネットワークに所属
+
+つまり、異なるネットワークに所属するコンテナ間で通信するための接続
+
+- セグメントとは、ブロードキャスト（接続している全コンピュータにデータを流す）が届くネットワークの範囲（グループ）
+ブリッジはパケットを全ての宛先にブロードキャスト（一斉送信）する
+そのため、セグメントの規模が大きくなればなるほど、セグメント内に不要なトラフィックが増える
+
+2. host
+ホストマシンのeth0を直接使用する方法
+直接ホストからコンテナにつなぐイメージ？？
+
+(3. none )
+どのDriverも使用せず、起動したコンテナをネットワークに所属させないための設定
+
+通信を受けるためのサーバーとしてnginxを構築し、
+作成したNetworkへ参加させる
+$ docker run --name nginx --network=myapp -d nginx
+--name string: Assign a name to the container
+--network network: Connect a container to a network
+
+
+* Data Volume
+ボリュームはデータを永続化するための機能
+(Volumeは2つの種類が存在)
+
+1.ホストのディレクトリ(ファイル)
+ホストで ls で見えるモノ
+
+2.Docker の リソースとしての Volume
+docker volume ls で見えるモノ
+
+外部HDDのようなimage
+ボリュームをコンテナ本体にマウント(-v)して使う
+
+
+* コンテナ と ボリューム の違い
+コンテナ内部にデータ(ファイル)を保存しても、コンテナ破棄すると消える
+データを永続化したいときは、コンテナの外にデータを置く必要がある
+その場所のことを、ボリュームと呼ぶ
+
+$ docker container run [option] -v ホスト側ディレクトリ:コンテナ側ディレクトリ リポジトリ名[:タグ] [コマンド] [コマンド引数]
+オプション
+-v <CONTAINER PATH>
+例.
+/tmp/text をボリュームとして実行後、volumeが作成された確認
+$ docker run -v /tmp/text ubuntu touch /tmp/text/hogefugapiyo
+↑volumeとして実行
+-> /tmp/textというvolumeを作成し、その下にhogefugapiyoファイルを作成
+
+$ docker volume ls
+↑確認
+
+docker volume inspect (VOLUME NAME)
+volumeの実体を見られる
+Mountpoint(=参照データの場所？)等が見られる
+ls -l /var/lib/docker/volumes/(Mountpoint)
+
+-v <HOST PATH>:<CONTAINER PATH>
+ホスト側のパスを指定
+:で区切ることで左に指定したホストのパスを右に指定したコンテナのパスと共有するという意味になる
+
+
+* Data Volume コンテナ(手法)
+データだけを持つための
+他のDocker Container で指定されているVolumeを参照するための機能
+docker run --name volume-test -v /tmp/test ubuntu touch /tmp/test/{hoge,fuga,piyo}
+参照元となるコンテナを volume-test という名前で作成し、その中でファイルを3つ作成
+
+
+* Image から Container を作成
+$ docker run <IMAGE>
+↑と同じ(長い方が操作対象が分かりやすい)
+$ docker container run <IMAGE>
+-d: バックグラウンドで動かす
+-p: ポートフォワーディング
+
+ホスト上の起動中のみのコンテナ
+$ docker container ls
+-a: ホスト上の全てのコンテナを見る
+-q: 起動中のコンテナIDのみを表示
+--filter名 "filter名=値": 特定の条件に一致するものを抽出
+例. "name=コンテナ名", "ancestor=イメージ名"
+
+停止した Container を再起動
+$ docker start -a <Container ID>
+
+Containerを停止
+$ docker container stop <コンテナ名orコンテナID>
+全てのコンテナを停止
+$ docker container stop $(docker container ls -q)
+
+containerを再起動
+$ docker container restart コンテナ名orコンテナID
+
+image一覧
+$ docker images
+
+imageの削除
+$ docker rmi imageID
+
+imageの全削除
+$ docker rmi $(docker images -q)
+
+動いているコンテナ一覧
+$ docker container ps
+
+停止しているコンテナ一覧
+$ docker container ps -a
+
+ログを確認
+$ docker container [options] logs <コンテナID>
+-f: 標準出力の取得をし続けるdocker
+
+停止したコンテナから exited-container という名前の新しいimageを作成
+$ docker commit <container ID> exited-container
+
+停止中のコンテナ内に入る
+$ docker container run -it exited-container(コンテナ名) bash
+
+起動中のコンテナ内にbashで入る(デバッグ,状態確認用)
+$ docker container exec -it <container ID> bash
+
+コンテナ間、コンテナ・ホスト間でのファイルをコピーできる
+実行中のコンテナ間でのファイルのやり取りに使用
+コンテナの中で生成されたファイルをホストにコピーして確認するデバック用途が代表的
+(コンテナ内 -> ホスト)
+$ docker container cp [options] コンテナID or コンテナ名:コンテナ内のコピー元 ホストのコピー先
+(ホスト -> コンテナ内)
+$ docker container cp [options] ホストのコピー先 コンテナID or コンテナ名:コンテナ内のコピー先
+
+コンテナ起動後、どのファイルが変更されたかは docker diff を使用して確認することができる
+$ docker container diff hoge
+
+データボリューム一覧を表示
+$ docker volume ls
+
+
+------ベストプラクティス-----
+1 .dockerignore
+いらないファイルを含めない
+
+1. マルチステージビルド
+複数のビルドしたイメージから必要なものだけをコピーし、
+アプリケーションの開発用ビルドの依存とランタイムの依存を分離
+ライブラリを展開する為に必要なツールを
+最終的なイメージに残さない => イメージサイズが小さくなる！
+
+COPY --from=builder(ASキーワードの名前)
+COPY --from=0(ビルドステージのインデックス)
+
+例.
+1つめのステージはgolangのビルド用に golang:alpine を使用
+FROM のうしろに付けた AS キーワードで ビルドステージに build-env という名前をつけ、
+go build でgolangのプログラムをコンパイルして hello という名前で実行バイナリを保存
+1つめのステージは実行用に busybox のイメージを使用
+2つめのステージでは COPY --from=build-env で1つめのビルドステージのイメージを参照し、
+実行に必要な hello のバイナリだけをピンポイントでコピー
+
+FROM golang:alpine AS build-env
+ADD . /work
+WORKDIR /work
+RUN go build -o hello main.go
+
+FROM busybox
+COPY --from=build-env /work/hello /usr/local/bin/hello
+ENTRYPOINT ["/usr/local/bin/hello"]
+
+2. 
+
+-----------docker-compose.yml------------
+↓docker-compose.yml--------
+version: "3"
+services:
+  echo:
+    image: example/echo:latest
+    ports:
+      - 9000:8080
+↑docker-compose.yml---------
+
+version: ファイルフォーマットのバージョン宣言
+service: コンテナ名の定義(echo)
+image: Dockerイメージを指定
+ports: ポートフォワーディングの指定
+
+↓docker-compose.yml--------------
+version: "3"
+services:
+  echo:
+    build: .
+    ports:
+      - 9000:8080
+↑docker-compose.yml--------------
+build: 同じ階層のDockerfileからImageを作成し、コンテナを起動
+
+docker-compose.yml を作成したディレクトリで、定義をもとにコンテナ群を構築・起動する
+$ docker-compose up -d
+--build: コンテナを起動する前にイメージをビルドする(イメージを更新して実行する場合に用いる)
+
+docker-compose.ymlで使用されるImageを作成 (コンテナのDockerfile変更の反映)
+$ docker-compose build
+--no-cache: Dockerfileを更新した等の理由でキャッシュを使いたくない場合(既にイメージが作成されているとそちらが優先的に使用される！)
+
+docker-compose.yml で定義しているコンテナをすべて削除
+$ docker-compose down
+
+docker-compose.yml で定義しているコンテナをすべて停止
+$ docker-compose stop
+
+既存のコンテナを起動
+$ docker-compose start
+
+runコマンドではimageの構築からコンテナの構築・起動までしてくれますが、引数でサービスを指定しないと失敗します
+$ docker-compose run
+
+runコマンドを介して指定したサービスのコンテナ内でコマンドを実行できる
+$ docker-compose run web rails new
+
+サービスのコンテナ内でコマンドを実行
+$ docker-compose exec web /bin/bash
+
+docker-compose up 時にDockerイメージのビルドも一緒におこなう
+
+↓docker-compose.yml--------------
+version: "3"
+  master:
+    container_name: master
+    image: jenkins:latest
+    ports:
+      - 8080:8080
+    volumes:
+      - ./jenkins_home:/var/jenkins_home
+↑docker-compose.yml--------------
+container_name: コンテナ名
+volumes: ホスト・コンテナ間でファイルを共有する
+ホストのカレントディレクトリ直下のjenkins_homeディレクトリとjenkinsコンテナ側の/var/jenkins_homeにマウントする指定
+
+* Docker Swarm
+Docker コンテナを複数ホストにまたがって管理するための機能
+Manager と Worker の 2 つの種類が存在
+↓docker-compose.yml の例--------------
+version: "3"
+services:
+  registry:
+    container_name: registry
+    image: registry:2.6
+    ports:
+      - 5000:5000
+    volumes:
+      - "./registry-data:/var/lib/registry"
+
+  manager:
+    container_name: manager
+    image: docker:18.05.0-ce-dind
+    privileged: true
+    tty: true
+    ports:
+      - 8000:80
+      - 9000:9000
+    depends_on:
+      - registry
+    expose:
+      - 3375
+    command: "--insecure-registry registry:5000"
+    volumes:
+      - "./stack:/stack"
+
+  worker01:
+    container_name: worker01
+    image: docker:18.05.0-ce-dind
+    privileged: true
+    tty: true
+    ports:
+      - 8000:80
+      - 9000:9000
+    depends_on:
+      - manager
+      - registry
+    expose:
+      - 7946
+      - 7946/udp
+      - 4789/udp
+    command: "--insecure-registry registry:5000"
+  worker01:
+    container_name: worker01
+    image: docker:18.05.0-ce-dind
+    privileged: true
+    tty: true
+    depends_on:
+      - manager
+      - registry
+    expose:
+      - 7946
+      - 7946/udp
+      - 4789/udp
+    command: "--insecure-registry registry:5000"
+  worker02:
+    container_name: worker02
+    image: docker:18.05.0-ce-dind
+    privileged: true
+    tty: true
+    depends_on:
+      - manager
+      - registry
+    expose:
+      - 7946
+      - 7946/udp
+      - 4789/udp
+    command: "--insecure-registry registry:5000"
+↑docker-compose.yml の例--------------
+
+* tty: 
+docker runコマンドの -t オプション
+（端末の付与,疑似ターミナルの割り当て：Allocate a pseudo-TTY）
+
+* stdin_open: 
+docker runコマンドの -i オプション
+（標準入力を意味します）
+
+
+privilleged: そのホストのほとんど全てのデバイスへのアクセスが可能(デフォルトではfalse)
+
+ホストからmanagerコンテナに対してdocker swarm init を実行して swarm の manager に設定する
+$ docker container exec -it manager docker swarm init
+-> JOINトークンが表示される
+docker swarm join --token ~~~
+
+JOIN トークンを利用してSwarmクラスタにworkerとして登録
+$ docker container exec -it worker01 docker swarm join --token SWMTKN-1-0mdc8ghwmw49tgw2hho4ufg6rh3r8in46q0ue9lo2z82ywqnav-4drn5v0dazo4qljuhetvkou1w manager:2377
+※manager と全ての worker コンテナはcomposeで作成されたデフォルトネットワーク上で実行されるため、お互いをコンテナ名で名前解決できる
+
+Swarm クラスタの状態を確認
+$ docker container exec -it manager docker node ls
+
+Docker レジストリへのPushの前準備？
+$ docker image tag example/echo:latest localhost:5000/example/echo:latest
+
+Docker レジストリにイメージをPush
+$ docker image push [push先のレジストリのホスト/]リポジトリ名[:タグ]
+例. $ docker image push localhost:5000/example/echo:latest
+
+workerコンテナからregistryコンテナをpullする
+$ docker image pull [pull先のレジストリのホスト/]リポジトリ名[:タグ]
+例. $ docker container exec -it worker01 \
+docker image pull registry:5000/example/echo:latest
+※worker01からregistryは名前解決できるためregistry:5000を指定
+
+イメージのdockerfileを見る
+$ docker history --no-trunc golang:1.10  | grep -oE "/bin/sh -c.+$"
+
+
+* Service
+アプリケーションを構成する一部のコンテナを制御するための単位
+外部から認識できる機能単位
+$ docker service create で作成
+例. manager内からregistryにpushしてあるregistry:5000/example/echo:latestを利用して
+$ docker container exec -it manager \
+docker service create --replicas 1 --publish 8000:8080 --name echo registry:5000/example/echo:latest
+
+サービス一覧
+$ docker container exec -it manager docker service ls
+
+サービスのコンテナの数(レプリカ)を増減させる
+$ docker container exec -it manager \
+docker service scale [サービス名]=スケール数
+例. $ docker container exec -it manager \
+docker service scale echo=6
+
+デプロイしたサービスの削除
+$ docker container exec -it manager \
+docker service rm [サービス名]
+
+Stack
+複数のサービスをグルーピングした単位であり、アプリケーションをの全体の構成を定義している
+複数のサービスが協調して動作することで成立するアプリケーションを扱うためのもの(サービスの上位概念)
+
+overlayネットワーク
+あるコンピュータネットワークの上に構築された別のコンピュータネットワーク
+複数のDockerホストにデプロイされているコンテナ群を同じネットワークに配置させることができる技術(=Dockerホスト間を超えたコンテナ通信が可能になる)
+Stackによりデプロイされるサービス群はoverlayネットワークに所属する
+Stackで利用するoverlayネットワークを設定しなければ、Stackの数だけoverlayネットワークが作成される(通信できなくなる)
+ch03というoverlayネットワークを作成し、Stackから作成される各サービスを所属させる
+$ docker container exec -it manager \
+docker network create --driver=overlay --attachable ch03
+
+stackのサブコマンド
+deploy: 新規にStackをデプロイ、または更新
+$ docker stack deploy [options] stack名
+-c: Stack定義ファイルへのパス
+例. StackをSwarmクラスタにデプロイ,Stack定義ファイルのパスを-cオプションで指定
+$ docker container exec -it manager \
+docker stack deploy -c /stack/ch03-webapi.yml echo
+
+↓ch03-webapi.yml-----------------
+version: "3"
+services:
+  nginx:
+    image: gihyodocker/nginx-proxy:latest
+    deploy:
+      replicas: 3
+      placement:
+        constraints: [node.role != manager]
+    environment:
+      BACKEND_HOST: echo_api:8080
+    depends_on:
+      - api
+    networks:
+      - ch03
+  api:
+    image: registry:5000/example/echo:latest
+    deploy:
+      replicas: 3
+      placement:
+        constraints: [node.role != manager]
+    networks:
+      - ch03
+networks:
+  ch03:
+    external: true
+↑ch03-webapi.yml-----------------
+
+
+services: Stack内のService一覧を表示
+デプロイされたStackを確認
+$ docker stack services [options] Stack名
+例. echoスタックのService一覧を表示
+
+ls: Stack内のService一覧を表示
+
+ps: Stackによってデプロイされているコンテナの一覧を表示
+$ docker stack ps [options] Stack名
+例. echoスタックでデプロイされたコンテナなの一覧を表示
+$ docker container exec -it manager \
+docker stack ps echo
+
+$ docker container exec -it manager \
+docker stack services echo
+
+rm: デプロイされているStackを削除
+services: Stack内のService一覧を表示
+
+visualizerで配置されているコンテナを可視化
+↓visualizer.yml----------------
+version: "3"
+services:
+  app:
+    image: dockersamples/visualizer
+    ports:
+      - "9000:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      mode: global
+      placement:
+        constraints: [node.role == manager]
+↑visualizer.yml----------------
+constraints制約: managerノードにだけ配置されるようになってる
+managerノードの9000ポートからvisualizerコンテナの8080ポートにフォワードを設定
+->ホストからmanagerノードへは9000:9000でポートフォワーディングしているため、ローカルマシンからはhttp://localhost:9000/でvisualizerを閲覧できる(ホストから多段でポートフォワーディングしている)
+
+Stackの削除
+docker stack rmでstack名を指定するとデプロイしたServiceをstackごと削除できる
+$ docker container exec -it manager \
+docker stack rm echo
+-> workerノードが削除されてる
+
+ServiceをSwarmクラスタ外から利用する
+複数のコンテナが複数のノードに分散して配置されていると多段でのポートフォワーディングしてホスト側からアクセスできない！
+->Serviceクラスタ外からのトラフィックを目的のServiceに転送するためのプロキシサーバを置く！
+
+↓ch03-ingress.yml----------------
+version: "3"
+services:
+  haproxy:
+    image: dockercloud/haproxy
+    networks:
+      - ch03
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
+    ports:
+      - 80:80
+      - 1936:1936 # for stats page (basic auth. stats:stats)
+networks:
+  ch03:
+    external: true
+↑ch03-ingress.yml----------------
+プロキシサーバとしてHAProxyを利用してSwarmクラスタ外からecho_nginxのServiceにアクセス
+イメージ(dockercloud/haproxy)から作成されるコンテナは外部からServiceへアクセスするための橋渡し(Ingress)としての機能とServiceが配置されているノードへのロードバランシングを行うことが可能
+
+↓ch03-webapi.yml-----------------
+version: "3"
+services:
+  nginx:
+    image: gihyodocker/nginx-proxy:latest
+    deploy:
+      replicas: 3
+      placement:
+        constraints: [node.role != manager]
+    environment:
+      SERVICE_PORTS: 80 # 追加部分！！！！
+      BACKEND_HOST: echo_api:8080
+    depends_on:
+      - api
+    networks:
+      - ch03
+  api:
+    image: registry:5000/example/echo:latest
+    deploy:
+      replicas: 3
+      placement:
+        constraints: [node.role != manager]
+    networks:
+      - ch03
+networks:
+  ch03:
+    external: true
+↑ch03-webapi.yml-----------------
+HAProxyがServiceを見つけるために,nginxの環境変数にSERVICE_PORTSを追加
+ここで指定する値はgihyodocker/nginx-proxy:latestコンテナがexposeしているポートである80
+
+Rstudio コンテナ起動コマンド
+docker run -d -p 8787:8787 -v $(pwd):/home/rstudio --name Rstudio -e PASSWORD=tocreaterenv rocker/tidyverse:3.6.1
+
+----------------docker-compose エラー --------------
+OCI runtime exec failed
+-> コンテナ名を間違えていた
+
+
+---------------EC2----------------
+ssh recruit_web_key_rsa  EC2にmasaでログイン
+ssh -i .ssh/recruit_web.pem ec2-user@54.65.188.108 EC2にルートユーザーでログイン
+
+
+sshを使ったファイル転送
+EC2 → ローカル 転送
+scp -i [公開鍵ファイルのパス] [ユーザ名@ドメイン]:[送信元EC2ファイルパス] [転送先ローカルファイルパス]
+# 例
+scp -i /keys/hoge.pem user@ec2-xxxx.com:/sqls/hoge.sql /Desktop
+
+ローカル → EC2 転送
+scp -i [公開鍵ファイルのパス] [送信元先ローカルファイルパス] [ユーザ名@ドメイン]:[転送先EC2ファイルパス]
+# 例
+scp -i /keys/hoge.pem /Desktop/hoge.sql user@ec2-xxxx.com:/sqls
+
+scpコマンド
+# 例
+scp -i ~/.ssh/recruit_web_key_rsa masa@52.192.96.31:/var/www/rails/recruit_web/* ~/Desktop
+
+Linuxでファイルの中身を空（サイズを0）にする
+空にしたいファイルの場所に移動
+例. access_logファイルを空にする場合
+$ : > access_log
+また、下記の方法でも対応できる
+空ファイル（nullデバイス）で上書き
+$ cp /dev/null access_log
+
+dev/null
+特殊ファイル
+書き込まれたデータを全て捨て（writeシステムコールは成功する）、読み出してもどんなプロセスに対してもデータを返さない（EOFを返す）
+実行結果をいちいち画面に表示したくない場合などによく使われる
+
+------------------Heroku------------------------
+# Container Registry ログイン
+heroku container:login
+
+# サンプルコード取得
+git clone https://github.com/nsuhara/heroku-docker.git -b master
+
+# Herokuアプリ作成
+heroku create アプリ名
+
+# Herokuのリモートレポジトリの登録
+# https://git.heroku.com/アプリ名.git
+heroku git:remote -a アプリ名
+
+# リモートリポジトリの表示
+git remote
+
+# (Dockerfileのあるディレクトリで?)イメージをビルド、Container Registry にプッシュ
+heroku container:push web
+heroku container:push web -a アプリ名
+
+# ローカルでイメージをビルドして Container Registry にプッシュ
+# Dockerfile のあるディレクトリで実行 (アプリとしてデプロイ)
+heroku container:push <process-type>
+
+# 既存のイメージのプッシュ
+​# Docker Hub からプルしたものなどのイメージを Heroku にプッシュするには、
+# 次の命名テンプレートに従って、そのイメージにタグを付けプッシュ
+docker tag <image> registry.heroku.com/<app>/<process-type>
+docker push registry.heroku.com/<app>/<process-type>
+
+# Dockerイメージをアプリにリリース
+heroku container:release web
+heroku container:release web -a アプリ名
+
+# アプリ表示
+heroku open
+heroku open -a アプリ名
+
+# ローカルのmainブランチのファイルをデプロイ
+git push heroku main
+
+------------git---------------
+# デプロイ(heroku)
+# 初めてのデプロイする時
+heroku login
+
+gem ファイル編集
+
+# Gitのリポジトリを新たに作成
+# ディレクトリを指定しなければ、コマンドを実行したワーキング・ディレクトリの直下にリポジトリのための「.git」というサブディレクトリが作成される
+git init
+heroku create アプリ名
+
+# 新しいブランチを作成
+git branch 新しいブランチ名
+
+# 新しいブランチを作成して切り替える
+git checkout -b 新しいブランチ名
+
+# 再デプロイの際に毎回やること
+
+# ブランチを切り替える
+git checkout ブランチ名
+git checkout master
+
+# ブランチ一覧
+git branch
+
+# 現在のブランチに指定したブランチの情報を加える
+git merge 加えるブランチ名
+git branch sample_branch
+
+# リモートの別ブランチの更新分をローカルの自分のブランチに反映(merge)する
+1. 一度ローカルでリモートの別ブランチにcheckout
+2. 別ブランチのリモートの変更分を反映
+3. 自分のブランチにcheckout
+4. ローカルに反映した別ブランチの反映分を自分のブランチにマージ
+  git merge <別ブランチ名>
+
+# gitのローカルのブランチ名を変更
+git branch -m <古いブランチ名> <新しいブランチ名>
+
+# 今開いているブランチをリネームする場合
+git branch -m <新しいブランチ名>
+
+# 変更差分をコミットせずに一時的に退避させることで保存できる
+# 作業中に他のブランチでの作業が必要になったときなどに便利
+git stash
+
+# untracked fileも含めて変更差分を退避()
+ git stash -u
+
+# 一時退避を元にもどす
+git stash pop # 最新のスタッシュを適用し、削除 
+git stash pop stash@{N} # N番目のスタッシュを適用し、削除
+
+# 一時退避の確認
+git stash list
+
+# 一時退避の消去
+git stash clear
+
+# N番目にスタッシュしたファイルの一覧を表示
+git stash show stash@{N}
+
+# N番目にスタッシュしたファイルの変更差分を表示
+git stash show -p stash@{N}
+
+# 全てのファイルを保存対象にする
+作業ディレクトリ→ステージングエリア
+git add *
+git add -A(多分上と一緒)
+
+# ファイルの変更をgitレポジトリ(ローカル)に保存
+# ステージングエリア→ローカルリポジトリ
+git commit -m "initial commit"
+
+# ローカルからリモートリポジトリにpush
+git push heroku master
+heroku run rails db:migrate
+
+# githubからEC2に変更分をpull
+git fetch origin
+git merge origin master
+
+# 直前のコミットの取り消し
+git reset --hard HEAD^
+# addを取り消す
+git reset --mixed HEAD
+git reset HEAD
+# 直前のコミットの取り消し（コミットのみ取り消し）
+git reset --soft HEAD^
+# 直前のコミットの取り消し（2つ前のコミットした状態に全てのローカルを戻す）
+# コミット後の変更を全部消したい(前回コミットした状態に戻す)
+git reset --hard HEAD^
+
+# git reset --hardで間違えた時
+# reflog確認
+git reflog                                                                                                                                          e597fa9 HEAD@{0}: reset: moving to e597fa9
+6af4454 HEAD@{1}: commit: 戻したいコミット
+# 戻したいコミットに戻す
+git reset --hard 6af4454
+
+# 空のカラムを作成
+heroku run rails db:migrate
+# heroku上のデータベースに初期データを入れる
+heroku run rails db:seed
+heroku open
+
+# github関係
+githubで新規リポジトリ作成->URLを取得
+# リモートリポジトリ情報を追加
+git remote add origin 追加するリモートリポジトリ
+# 例(githubにて)
+git remote add origin https://github.com/Masato516/recruit_app.git
+# リモートリポジトリの削除
+git remote rm origin
+
+# ローカルレポジトリからgithubにアップロード
+git push -u origin master
+
+#既存のリポジトリ（リモートリポジトリ）にあるソースコードなどを入手
+#リポジトリを自分の環境に複製
+git clone https://github.com/Masato516/recruit_app.git
+git clone https://github.com/ユーザ名/REPOSITORY.git
+# リモートリポジトリの内容がバージョンアップされたら時などに最新版を取得
+git pull
+# -b ブランチ名 [対象]
+#対象のチェックアウト後に、新しいブランチを開始
+git checkout -b ブランチ名
+
+# Githubのブランチへのpush(新規ブランチだとリモートのブランチが作成される)
+git push -u origin ブランチ名
+-u: 上流ブランチとしてセット
+
+# Githubのブランチを削除
+git push origin :ブランチ名
+
+-n、--dry-run
+dry runと言われる、コマンド実行はしますが実際には反映されずどういったことが起こるかを知ることができるようなものがあります。
+実際にはaddはされませんが、どのファイルがaddされるか一覧で見ることができます。
+$ git add -n -A
+$ git add . --dry-run
+
+# バージョンを指定してgemをインストール
+gem install gemの名前 -v バージョン
+#sqlite3のバージョンを指定してインストールした例
+gem install sqlite3 -v "1.3.8"
+
+-------------github----------------
+プライベートレポジトリ(＆organization?)レポジトリだと
+SSH接続でないといけない (git@github〜で始まるURLが)
+
+Gitとgithubアカウントを設定済みで別のgithubアカウントを設定する場合
+1. サブアカウント用の鍵を作る
+$ cd ~/.ssh/
+$ ls
+
+2. 鍵の生成 と 公開鍵 をGithubに登録
+# コマンドのオプション-fでファイル名を指定してファイルが上書きされないよう注意(デフォルトはid_rsaみたいな感じ)
+$ ssh-keygen -t rsa -C "your_email@youremail.com" -f [file name]
+  # Creates a new ssh key using the provided email
+  # Generating public/private rsa key pair.
+  # Enter file in which to save the key (/c/Users/you/.ssh/[file name]): [Press enter]
+  # Enter passphrase (empty for no passphrase): [Type a passphrase]
+  # Enter same passphrase again: [Type passphrase again]
+
+$ cd ~/.ssh
+$ chmod 600 id_rsa
+
+3. ~/.ssh/configファイルに以下のようにHost情報を記述
+
+Host github-private
+  User git
+  Port 22
+  HostName github.com
+  IdentityFile ~/.ssh/github-private_rsa
+  TCPKeepAlive yes
+  IdentitiesOnly yes
+
+Host          	ホスト名	                githubの場合はgithub-{githubアカウント名}を指定
+User          	ログインユーザー名	        githubの場合はgit
+Port          	ポート	デフォルトはPort 22
+HostName	      ホストのアドレス、またはIP   githubの場合はHostName github.com
+IdentityFile	  利用する秘密鍵を指定する   	 秘密鍵へのパスを指定
+IdentitiesOnly	持続的接続	               yesを指定
+TCPKeepAlive	  IdentityFileを利用する場合  yesを指定
+
+4. 接続テスト
+$ ssh -T github-private(ホスト名)
+# エラーのようなメッセージが出るが問題ない(shellアクセスは許可していない旨)
+
+-------------ngrok--------------
+ポート4567でローカルにアクセスできるようにする
+ngrok http 4567
+
+
+**LINEへのpush通知
+curl -v -X POST https://api.line.me/v2/bot/message/push \
+-H 'Content-Type: application/json' \
+-H 'Authorization: Bearer アクセストークン' \
+-d '{
+    "to": "ユーザーID",
+    "messages":[
+        {
+            "type":"text",
+            "text":"Hello, world1"
+        },
+        {
+            "type":"text",
+            "text":"Hello, world2"
+        }
+    ]
+}'
+
+1. デベロッパーツールのNetworkを開く
+2. Request headerを参考にpayloadやheaders、formなどを記述する
+
+---------------curl---------------
+
+
+------------http header------------
+HTTP ヘッダーは、大文字小文字を区別しないヘッダー名とそれに続くコロン (:)、 値で構成される
+値の前にあるホワイトスペースは無視される
+
+** Generalヘッダ
+リクエストとレスポンスの両方に適用されるが、本文で転送されるデータとは関係ない
+
+
+** Request Headers:
+* Accept
+クライアントが処理できるコンテンツタイプを MIME タイプで伝える
+
+* Content-Type
+実際にどんな形式のデータを送信したかを表す
+基本的にはサーバ側がクライアント側へ返すレスポンス内で使われる。
+クライアント側がサーバ側へPOSTやPUTメソッドで何かしらのデータを渡す際にも使える
+
+・application/x-www-form-urlencoded; charset=UTF-8
+formからクライアントがサーバーに送信するときのcontentTyped
+ちなみにformがひとつ増えるたびにform1=data1&form2=data2と増える
+このフォーマットは[キー1=値1&キー2=値2&...]という形でキーと値のペアをサーバーに送信
+リクエストで日本語などのマルチバイト文字は使用できないのでUrlEncodingをした上でサーバーへ送信する
+
+添付ファイルを送る場合はapplication/x-www-form-urlencodedでは送れない
+multipart/form-dataを使用することになる
+しかし、multipart/form-dataは送信されるデータサイズが大きくなるので
+添付ファイルがある場合はmultipart/form-data、ない場合はapplication/x-www-form-urlencodedを使うというのが良い
+
+・Content-TypeによるChromeのNetworkの表記の違い
+Form Data: 
+HTML-Form with method="POST" を用いていて
+Content-Typeが application/x-www-form-urlencoded と Content-Type: multipart/form-dataの場合
+-> request paload が Form Dataになる
+
+Request Payload:
+Content-Type: application/json などの場合
+
+・例
+POST http://article.higlabo.com/ja/send_mail.aspx HTTP/1.1
+Accept: text/html, application/xhtml+xml, */*
+Accept-Language: ja-JP
+Content-Type: application/x-www-form-urlencoded
+User-Agent: Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0)
+Accept-Encoding: gzip, deflate
+Proxy-Connection: Keep-Alive
+Host: article.higlabo.com
+
+mailaddress=xxx%40gmail.com&title=Test&detail=%E3%83%86%E3%82%B9%E3%83%88%E3%83%A1
+%E3%83%BC%E3%83%AB
+
+* accept-encoding
+圧縮アルゴリズム
+サーバーとのやりとりを軽くするためにデータを圧縮してやりとりする
+その際解凍できない圧縮方法でレスポンスされても困るので、
+Accept-Encodingで圧縮方法を指定する
+簡単に言うと「この方法なら解凍できるよ」と言ったもの
+
+* referer
+どのページから飛んできたのかを表示
+
+* accept-language
+受け入れることができる文字種
+
+* cookie
+クッキー
+ログインしていないユーザーにも
+セッションID(JSESSIONID)、カートのID? (ElysiumBasketmyprotein_V6)、カートのID? (ElysiumBasketmyprotein_V6)の
+トークンをもたせる
+ログインした場合でも、同じcookieを持つ(ログインユーザーの情報とcookieの情報を結びつけている？？)
+
+ログアウトした場合、
+RememberMe_myprotein_V6とJSESSIONIDが変わる
+たぶん、セッションIDとRememberMeのトークンが変わる
+
+・RememberMe_myprotein_V6 (RememberMeのトークン)
+ログイン状態を保持する機能？
+ログインしたらset-cookieでレスポンスが返ってくる
+おそらく、ユーザー毎のトークンを持っている
+ログインすると毎回同じ値を持つ(cookieを削除しても変化しない)
+
+・chumewe_user (１度削除すると値に新しいトークンが設定される)
+ユーザに一意の識別子を与えるために使用される
+
+・chumewe_sess (１度削除すると値に新しいトークンが設定される)
+ユーザーのセッションに固有の識別子を与えるために使用される
+クッキーのターゲティングと広告これらのクッキーは、あなたとあなたの利益に関連した広告を配信するために使用される
+
+・_utma _utmb _utmc _utmz（Googleアナリティクス）
+これらのクッキーは、訪問者が当サイトをどのように使用しているかに関する情報を収集するために使用される
+クッキーは匿名の形式で情報を収集する
+収集する情報 ー サイトへの訪問者の数、訪問者がサイトに来た場所、訪問したページの数
+
+・locale_V6
+ユーザーがどの言語をウェブサイトで表示しているかを記憶するために使用
+
+・カートのID? (ElysiumBasketmyprotein_V6)
+ユーザーがそのセッションや前回の訪問時に既にバスケットに入れたものにアクセスするために使用
+セッション(cookieのElysiumBasketmyprotein_V6の値)が保たれている間は同じ商品を持っている
+
+・NSC_ [関連するサーバーの名前]
+Webサイトで使用しているさまざまなサーバー間のロードバランサとして機能
+ユーザがサーバ間で転送するときに、ウェブサイトとのユーザの対話が中断されないことが保証される
+
+・セッションID (JSESSIONID) (1度削除すると値に新しいトークンが設定される)
+アプリケーションサーバーのセッション管理の目的で使用される
+リクエスト時に送り、セッションを保つ
+セッションが保たれている間は同じセッションID
+
+・affil_V6
+アフィリエイトネットワークリンク経由での販売を追跡
+
+・csrf_token (1度削除すると値に新しいトークンが設定される)
+Cross Site Request Forgery 対策のトークン
+セッションが保たれている間は同じ値 (Myprotein にて)
+セッション(cookieのcsrf_tokenの値)が保たれている間は同じ商品を持っている
+JSでHTMLのform から csrf_token を取得
+  hiddenFormRegExp = /name="csrf_token"\svalue="(.*?)"/
+  csrfTokenRegExp = /[0-9]{20}/
+  const hiddenForm = content.match(hiddenFormRegExp);
+  const csrfTokenNum = hiddenForm[0].match(csrfTokenRegExp);
+
+* upgrade-insecure-requests
+コード内にhttp://を含リンクがあればhttps://として扱ってくださいというもの
+
+* user-agent
+使用している機種・ブラウザ
+
+** Response Headers
+* cache-controrl
+キャッシュコントロール
+キャッシュにはブラウザキャッシュとキャッシュサーバーの２つがあり、基本的にはサーバー側で処理する
+そのキャッシュをどうするのかと言う設定
+no-storeは「全てのキャッシュを行わない」
+PHPなどを使って動的に処理する必要がある場合に設定
+no-cache「有効なキャッシュか確認が取れない限り使わない」この確認は本来のwebサーバーへ確認します。 
+must-revalidate「キャッシュが有効か否か必ず問い合わせろ」と言う設定
+
+* content-encoding
+データの圧縮方法
+上述したaccept-encodingで「gzipという方法なら解凍できるよ」とリクエストを送っている
+なのでサーバーはgzipという方法でデータを圧縮している
+
+* content-type
+レスポンスしたファイル形式と文字コード
+
+date・・・日付
+
+expires
+キャッシュの有効期限。推奨は一週間から一年
+過去の日付になっている場合は0秒と判断
+
+* pragma
+HTTP1.0の下位互換
+cache-controrlとやっていることは似ています。
+
+* server
+サーバー名
+
+* set-cookie
+セッションIDとexpires
+つまりセッションIDの有効期限
+
+* status
+HTTPステータス
+
+* vary
+キャッシュサーバーに残っているキャッシュのUser-Agentやaccept-encodingのデータとリクエストされたUser-Agentやaccept-encodingが違っていた場合、
+キャッシュを更新するためのヘッダー。（多分）
+
+----------------------reCAPTCHA-----------------------
+
+https://www.synergy-marketing.co.jp/blog/using_recaptcha_on_form
+

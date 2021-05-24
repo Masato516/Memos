@@ -1,0 +1,1184 @@
+ECS:DockerコンテナをAWSで楽に動かすサービス
+ECR:コンテナのイメージをAWSで楽に管理するサービス（Gitみたいなサービス）
+
+-------------S3------------
+Bucket内には複数のObjectを置くことができる
+
+# S3バケットの命名規則
+・他の全てのバケット内でユニークな名前でないといけない
+・名前は一度決めると二度と変えられない
+->変える場合は新しいバケットを作ってファイルをコピーする
+->AWS CLIを使うのが良い
+
+独自ドメインからアクセスする場合
+-> 任意名.自分のドメイン名
+例.bucket.recruit-rits.net
+
+
+# Webサーバーとしてアクセスできるようにする
+1. Static website hosting機能を有効
+2. パプリックアクセスでバケットポリシーからアクセスできるように設定
+3. 匿名アクセス出来るようにする(バケットポリシーを設定)
+-> Webサーバーとして機能する
+
+# バケットポリシー
+バケットポリシーの例
+https://docs.aws.amazon.com/ja_jp/AmazonS3/latest/userguide/example-bucket-policies.html
+
+1. Version
+設定構成のバージョン番号
+
+2. Sid
+ポリシーの名称
+
+3. EffectとPrincipal
+「許諾の種類」と「誰に対してか」を指定
+例.
+"Effect":"Allow", ->許可
+"Principal": "*", ->全ユーザーに対して
+
+4. ActionとResource
+「どんな操作を」、「何に対して」を指定
+例.
+"Action":["s3:GetObject","s3:GetObjectVersion"], ->読み取りの操作
+"Resource":["arn:aws:s3:::log.recruit-rits.net()/*"] -> その対象となるオブジェクト
+
+s3:GetObjectVersion
+オブジェクトの特定のバージョンに対するアクセス許可を付与
+
+書式: arn::aws:s3:リージョン:アカウント:バケット名/パス名
+「:」だけ書かれている場合は「指定しない」という意味
+
+・全ユーザーに読み取り権限を与えるポリシーデータ
+{
+  "Version":"2012-10-17",
+  "Statement":[
+    {
+      "Sid":"PublicRead",
+      "Effect":"Allow",
+      "Principal": "*",
+      "Action":["s3:GetObject","s3:GetObjectVersion"],
+      "Resource":["arn:aws:s3:::bucket.recruit-rits.net/*"]
+    }
+  ]
+}
+
+
+# https(暗号化)
+S3はhttpsに対応していないので
+CloudFrontを使う
+
+
+# ストレージクラス
+S3 Glacier: バックアップ,ログデータの保存
+
+
+# リダイレクトルール
+コンテンツの一部が別のサーバーにある時に使う設定
+S3とは別にプログラムを実行可能なwebサーバーにリダイレクトする等の運用をおこなう
+
+
+# バケットポリシー(リソースベースのポリシー)
+バケットに対して誰からアクセスできるように設定するもの
+・ACL(アクセスコントロールリスト)
+・バケットポリシー
+・パブリックアクセス機能
+
+
+# ユーザーポリシー(ユーザーベースのポリシー)
+ユーザーに対してバケットに対するアクセス権を設定するもの
+
+
+# パブリックアクセス
+ACLとバケットポリシーについて、新規の公開を防ぐ設定と、既存の公開を修正する設定
+項目としては2分類4項目
+・ACLの公開設定管理
+  新規の公開設定のACLをブロックする
+  既存の公開設定のACLを削除する
+・バケットポリシーの公開設定管理
+  新規の公開設定のバケットポリシーをブロックする
+  既存の公開設定及びクロスアカウントアクセスのバケットポリシーをブロックする
+
+
+# CORS(Cross-Origin Resource Sharing)
+別オリジン(ドメイン)のリソースへアクセス(＝ クロスサイトHTTPリクエスト)できるようにするためのルール、手法
+オリジン: スキーム、ホスト、ポートの組み合わせ
+
+記述例:
+https://docs.aws.amazon.com/ja_jp/AmazonS3/latest/userguide/ManageCorsUsing.html
+
+クロスサイトリクエストフォージェリ(CSRF)などのセキュリティ攻撃を防止するために、
+ブラウザは「同一生成元ポリシー(Same-Origin Policy)」という仕組みを実装し、
+異なるオリジンのリソースへのアクセスに制約をかけている。
+-> あるページを開いたときに、関連するリソース(JavaScript等)を同じオリジンからしか取得しない
+
+CORSは、この制約を一部解除し、異なるオリジン間でリソースを共有するための仕組み
+
+簡単な例
+ブラウザがオリジンA(http://origin-a.com)のWEBサイトを表示中に、
+オリジンB(http://origin-b.com)のリソースへアクセスする場合のやりとりの例
+
+ブラウザ「オリジンA(http://origin-a.com)がおたくのリソース欲しいって」
+オリジンB「オリジンA(http://origin-a.com)からきたの？それなら良いよ」
+
+こんな会話が、ブラウザから送られるHTTPリクエストヘッダとサーバから返される
+HTTPレスポンスヘッダにて行われている
+・HTTPリクエストヘッダ
+GET /api HTTP/1.1
+Origin: http://origin-a.com
+
+・HTTPレスポンスヘッダ
+HTTP/1.1 200 OK
+Access-Control-Allow-Origin: http://origin-a.com
+
+
+
+アクセスログファイル
+Elastic Load Balancing は各ロードバランサーノードのログファイルを 5 分ごとに発行
+ロードバランサーでは、同じ期間について複数のログが発行されることがある
+これは通常、サイトに高トラフィックがある場合に発生する
+参考URL
+https://docs.aws.amazon.com/ja_jp/elasticloadbalancing/latest/application/load-balancer-access-logs.html
+
+アクセスログのファイル名の形式
+bucket[/prefix]/AWSLogs/aws-account-id/elasticloadbalancing/region/yyyy/mm/dd/aws-account-id_elasticloadbalancing_region_load-balancer-id_end-time_ip-address_random-string.log.gz
+
+・bucket
+S3 バケットの名前
+・プレフィックス
+バケットのプレフィックス (論理階層)。プレフィックスを指定しない場合、ログはバケットのルートレベルに配置されます。
+・aws-account-id
+所有者の AWS アカウント ID。
+・リージョン
+ロードバランサーおよび S3 バケットのリージョン。
+・yyyy/mm/dd
+ログが配信された日付。
+・load-balancer-id
+ロードバランサーのリソース ID。リソース ID にスラッシュ (/) が含まれている場合、ピリオド (.) に置換されます。
+・end-time
+ログ作成の間隔が終了した日時。たとえば、終了時間 20140215T2340Z には、23:35～23:40 に行われたリクエストのエントリが含まれます。
+・ip-address
+リクエストを処理したロードバランサーノードの IP アドレス。内部ロードバランサーの場合、プライベート IP アドレスです。
+・random-string
+システムによって生成されたランダム文字列。
+
+---------CloudFront---------
+コンテンツのキュッシュ機能を提供する
+通信の暗号化
+
+
+----------IAM------------
+rootユーザーのアクセスキーとシークレットキーは
+デフォルトでは作成されていない！！
+
+----------AWS CLI-----------
+# 名前付きプロファイル
+複数のAWSやIAMユーザーを使い分ける
+$ aws configure --profile <profile-name>
+
+# aws_completer
+補完機能やどのようなコマンドがあるか教えてくれる機能
+
+bashの場合の設定
+$ complete -C '/usr/local/bin/aws_completer' aws
+
+基本的な使い方
+$ aws service <command>
+
+# s3
+バケット内のフォルダ、ファイルの確認
+$ aws s3 ls s3://(バケット名)/
+
+ファイルの中身の確認
+$ aws s3 cp s3://(バケット名)/ファイル名 - | cat
+
+
+CLIのリファレンス
+https://awscli.amazonaws.com/v2/documentation/api/latest/index.html
+
+
+
+### ハンズオン(ユーザー作成と権限付与)
+
+# EC2の秘密鍵をダウンロードして.sshに移動させる
+
+# 600番のアクセス権を付与
+$: chmod 600 秘密鍵名.pem
+
+# デフォルトのec2-userは始めから公開鍵がEC2に登録されてある
+# そのため、鍵の作成・登録が必要ない！！
+ssh -i 秘密鍵名.pem ec2-user@54.92.121.12
+
+# 新規ユーザーの作成(ルート権限が必要)
+$ sudo adduser ユーザー名
+
+# 新規ユーザーのパスワード登録(ルート権限がなければPW入力が必要)
+$ sudo passwd ユーザー名
+
+# sudo権限を変更する
+sudoコマンドの設定ファイルの中身をVimを通じてターミナルから確認＆編集する
+$ sudo visudo
+root      ALL=(ALL)       ALL   の下に
+ユーザー名  ALL=(ALL)       ALL 　を追加(ユーザーに管理者権限を付与)
+
+# ユーザーの切り替え
+sudo su - ユーザー名
+
+## 鍵の生成 と 公開鍵 をEC2に登録
+# コマンドのオプション-fでファイル名を指定してファイルが上書きされないよう注意(デフォルトはid_rsaみたいな感じ)
+$ ssh-keygen -t rsa -C "your_email@youremail.com" -f [file name]
+  # Creates a new ssh key using the provided email
+  # Generating public/private rsa key pair.
+  # Enter file in which to save the key (/c/Users/you/.ssh/[file name]): [Press enter]
+  # Enter passphrase (empty for no passphrase): [Type a passphrase]
+  # Enter same passphrase again: [Type passphrase again]
+
+$ cd ~/.ssh
+$ chmod 600 id_rsa
+
+
+## ローカルで公開鍵、秘密鍵の生成と鍵をどの通信に使用するかの設定
+localの~/.ssh/configファイルに以下のようにHost情報を記述
+
+Host recruit_web_key_rsa
+  User ユーザー名(masa)
+  Port 22
+  HostName Elastic IP
+  IdentityFile ~/.ssh/recruit-web-key_rsa
+  # TCPKeepAlive yes Githubでは付けていた
+  # IdentitiesOnly yes Githubでは付けていた
+
+Host          	ホスト名	                githubの場合はgithub-{githubアカウント名}を指定
+User          	ログインユーザー名	        ユーザー名
+Port          	ポート	デフォルトはPort 22
+HostName	      ホストのアドレス、またはIP   githubの場合はHostName github.com
+IdentityFile	  利用する秘密鍵を指定する   	 秘密鍵へのパスを指定
+IdentitiesOnly	持続的接続	               (Githubの場合yesを指定)
+TCPKeepAlive	  IdentityFileを利用する場合  (Githubの場合yesを指定)
+
+# 鍵の中身をターミナル上に出力
+$ cat mumu_key_rsa.pub
+-> ssh-rsa~~~~local
+
+
+## サーバー側(EC2)で公開鍵を登録
+[ec2-user|~]$ sudo su - ユーザー名
+[ユーザー名|~]$ mkdir .ssh
+[ユーザー名|~]$ chmod 700 .ssh
+[ユーザー名|~]$ cd .ssh
+[ユーザー名|.ssh]$ vim authorized_keys
+-----------------------------
+ssh-rsa sdfjerijgviodsjcIKJKJSDFJWIRJGIUVSDJFKCNZKXVNJSKDNVMJKNSFUIEJSDFNCJSKDNVJKDSNVJNVJKDSNVJKNXCMXCNMXNVMDSXCKLMKDLSMVKSDLMVKDSLMVKLCA shizuma@shizuma-no-MacBook-Air.local
+(#先ほどコピーした鍵の中身を貼り付け)
+-----------------------------
+[ユーザー名|.ssh]$ chmod 600 authorized_keys
+[ユーザー名|.ssh]$ exit
+[ec2-user|~]$ exit
+
+# ローカルからユーザー名でログイン
+[~]$ ssh mumu_key_rsa
+
+
+## EC2インスタンスの環境構築
+
+[ユーザー名] sudo yum install \ #yumのインストール
+git make gcc-c++ patch \ #cとc++のコンパイラ、gitの差分をpatchファイルに変更
+openssl-devel \ 
+libyaml-devel libffi-devel libicu-devel \
+libxml2 libxslt libxml2-devel libxslt-devel \
+zlib-devel readline-devel \
+mysql mysql-server mysql-devel \
+ImageMagick ImageMagick-devel \
+epel-release
+
+[ユーザー名|~]$ sudo yum install nodejs npm --enablerepo=epel  
+
+[ユーザー名|~]$ git clone https://github.com/sstephenson/rbenv.git ~/.rbenv(クローン先のフォルダ)
+(#rbenvのインストール) 
+
+[ユーザー名|~]$ echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bash_profile 
+(#パスを通す)
+
+[ユーザー名|~]$ echo 'eval "$(rbenv init -)"' >> ~/.bash_profile
+
+[ユーザー名|~]$ source .bash_profile  
+(#.bash_profileの読み込み)
+
+[ユーザー名|~]$ git clone https://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build
+(#ruby-buildのインストール)
+
+[ユーザー名|~]$ rbenv rehash
+(#rehashを行う:rehashはこれまたrbenv版のおまじないのようなもの)
+この操作によってrubyやらgemでインストールしてきたファイルの実行環境が生成される
+
+
+# rubyのインストール
+[ユーザー名|~]$ rbenv install -v バージョン
+[ユーザー名|~]$ rbenv global バージョン
+[ユーザー名|~]$ rbenv rehash
+[ユーザー名|~]$ ruby -v
+
+## gitとの連携、アプリのクローン
+
+# Gitの設定ファイルの作成・編集
+[ユーザー名|~]$ vim .gitconfig
+
+-----------------------------------------
+[user]
+  name = your_name (#gitに登録した自分の名前)
+  email = hoge@hoge.com (#git登録時の自分のメアド)
+[color] (#色付け)
+  ui = true
+# githubの場合
+[url "github:"] (#pull、pushのための設定)
+    InsteadOf = https://github.com/
+    InsteadOf = git@github.com:
+------------------------------------------
+
+# ユーザー名・メアドの確認
+(コマンドを実行した場所で有効になっている設定項目とその設定値がすべて表示)
+$ git config -l
+
+# アプリを配置するディレクトリを作成
+[ユーザー名|~]$ cd /
+[ユーザー名|/]$ sudo chown ユーザー名 var (#varフォルダの所有者をユーザー名にする)
+[ユーザー名|/]$ cd var
+[ユーザー名|var]$ sudo mkdir www
+[ユーザー名|var]$ sudo chown ユーザー名 www 
+[ユーザー名|var]$ cd www
+(#wwwと同じ処理)
+[ユーザー名|www]$ sudo mkdir rails
+[ユーザー名|www]$ sudo chown ユーザー名 rails
+
+
+## sshファルダの作成、公開・秘密鍵の生成 と 公開鍵 のGitHubへの登録
+
+[ユーザー名|www]$ cd ~
+[ユーザー名|~]$ mkdir .ssh (#既に生成されている場合もあります。)
+[ユーザー名|~]$ chmod 700 .ssh
+[ユーザー名|.ssh]$ cd .ssh
+
+# コマンドのオプション-fでファイル名を指定してファイルが上書きされないよう注意(デフォルトはid_rsaみたいな感じ)
+$ ssh-keygen -t rsa -f [file name]
+-> そのままエンター！
+
+#「aws_git_rsa」と「aws_git_rsa.pub」が生成されたことを確認
+[ユーザー名|.ssh]$ ls
+
+# GitHubにSSH接続するための設定
+[ユーザー名|.ssh]$ vim config
+# githubの場合以下を追記
+Host github
+  Hostname github.com
+  User git
+  IdentityFile ~/.ssh/aws_git_rsa (#秘密鍵の設定)
+
+# GitHubに公開鍵の登録
+[naoki|.ssh]$ cat aws_git_rsa.pub
+
+# ↓にコピペする
+https://github.com/settings/ssh
+
+# GitHubにアクセスするために設定フォルダの権限を緩める(Bad owner or permissions on~~~~ と言われてしまった場合)
+[ユーザー名|.ssh]chmod 600 config
+
+# Githubへの接続の確認
+$ ssh -T github
+
+## GitHubからプロジェクトのクローン
+[ユーザー名|.ssh]$ cd /var/www/rails
+[ユーザー名|rails]$ git clone git@github.com:Masato516/recruit_web.git(GitHubから取得)
+
+# クローンできているか確認
+[ユーザー名|.ssh]$ cd /var/www/rails
+[ユーザー名|rails]$ ls
+
+# master.key をEC2に登録
+sudo vi /var/www/rails/recruit_web/config/master.key # シークレットキーを書いておくファイルを作成
+# ローカルにあるconfig/master.keyの中身をコピペ
+
+
+## Unicornのインストール
+[ユーザー名|recruit_web] $: vi Gemfile
+-----------------------------
+#以下を追記
+group :production, :staging do
+    gem 'unicorn'
+end
+----------------------------
+[ユーザー名|recruit_web] $ gem install bundler
+[ユーザー名|recruit_web] $ bundle install
+[ユーザー名|recruit_web] $ vi config/unicorn.conf.rb
+----------------------------
+
+## Unicornの設定
+config/unicorn.conf.rb----------------------------------------------
+# set lets
+$worker  = 2
+$timeout = 30
+$app_dir = "/var/www/rails/recruit_web" #自分のアプリケーション名
+$listen  = File.expand_path 'tmp/sockets/.unicorn.sock', $app_dir
+$pid     = File.expand_path 'tmp/pids/unicorn.pid',      $app_dir
+$std_log = File.expand_path 'log/unicorn.log',           $app_dir
+# set config
+worker_processes  $worker
+working_directory $app_dir
+stderr_path $std_log
+stdout_path $std_log
+timeout $timeout
+listen  $listen
+pid $pid
+# loading booster
+preload_app true
+# before starting processes
+before_fork do |server, worker|
+  defined?(ActiveRecord::Base) and ActiveRecord::Base.connection.disconnect!
+  old_pid = "#{server.config[:pid]}.oldbin"
+  if old_pid != server.pid
+    begin
+      Process.kill "QUIT", File.read(old_pid).to_i
+    rescue Errno::ENOENT, Errno::ESRCH
+    end
+  end
+end
+# after finishing processes
+after_fork do |server, worker|
+  defined?(ActiveRecord::Base) and ActiveRecord::Base.establish_connection
+end
+---------------------------------------------------------------------
+
+## Nginxの設定
+[ユーザー名|~] sudo yum install nginx
+[ユーザー名|~]$ cd /etc/nginx/conf.d/
+[ユーザー名|conf.d]$ sudo vi recruit_web.conf #自分のアプリケーション名でファイル名変更
+
+/etc/nginx/recruit_web.conf -------------------------------------------------------
+# log directory
+error_log  /var/www/rails/recruit_web/log/nginx.error.log; #自分のアプリケーション名に変更
+access_log /var/www/rails/recruit_web/log/nginx.access.log; #自分のアプリケーション名に変更
+# max body size
+client_max_body_size 2G;
+upstream app_server {
+  # for UNIX domain socket setups
+  server unix:/var/www/rails/recruit_web/tmp/sockets/.unicorn.sock fail_timeout=0; #自分のアプリケーション名に変更
+}
+server {
+  listen 80;
+  server_name ~~~.~~~.~~~.~~~;(#アプリのElastic IPに変更してください)
+  # nginx so increasing this is generally safe...
+  keepalive_timeout 5;
+  # path for static files
+  root /var/www/rails/recruit_web/public; #自分のアプリケーション名に変更
+  # page cache loading
+  try_files $uri/index.html $uri.html $uri @app;
+  location @app {
+    # HTTP headers
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header Host $http_host;
+    proxy_redirect off;
+    proxy_pass http://app_server;
+  }
+  # Rails error pages
+  error_page 500 502 503 504 /500.html;
+  location = /500.html {
+    root /var/www/rails/recruit_web/public; #自分のアプリケーション名に変更
+  }
+}
+----------------------------------------------------------------------------------
+
+# postメソッドでもエラーがでないようにする呪文
+[ユーザー名|conf.d] cd /var/lib
+[ユーザー名|lib] sudo chmod -R 775 nginx
+
+## MySQLの設定
+[ユーザー名|recruit_web]$ vi config/database.yml
+----------------------------
+  production:
+    <<: *default
+    database: mumu_production
+    username: root #ここをrootに変更する
+　　password:      #ここを空欄にする
+----------------------------
+
+[ユーザー名|recruit_web]$ sudo service mysqld start #mysqldの起動
+[ユーザー名|recruit_web]$ ln -s /var/lib/mysql/mysql.sock /tmp/mysql.sock
+[ユーザー名|recruit_web]$ rake db:create RAILS_ENV=production
+[ユーザー名|recruit_web]$ rake db:migrate RAILS_ENV=production
+
+## Nginxの起動
+[ユーザー名|recruit_web]$ sudo service nginx start
+
+# Unicornの起動
+[recruit_web]$ ps -ef | grep unicorn | grep -v grep
+
+# unicornを起動
+[ユーザー名]$ unicorn_rails -c /var/www/rails/(アプリの名前)/config/unicorn.conf.rb -D -E production
+
+# Nginxの再起動
+[ユーザー名|recruit_web]$ sudo nginx -s reload
+
+# 画像の表示が出来ていない場合は、プリコンパイルを行う
+1.unicornの停止(kill [PID])
+2.rake assets:precompile RAILS_ENV=production の実行
+3.unicornの再起動(上記コマンド)
+
+
+## Capistranoの導入
+
+# Capistranoに関連するGemのインストール
+(local)Gemfile
+group :development, :test do
+ gem 'capistrano'
+ gem 'capistrano-bundler'
+ gem 'capistrano-rails'
+ gem 'capistrano-rbenv'
+end
+
+group :production, :staging do
+  gem 'unicorn'
+end
+
+$ bundle exec cap install
+
+
+
+
+----------------Nginx-----------------
+# 使い方
+1. 静的なコンテンツのWebサーバー
+2. 動的なコンテンツのWebサーバー
+3. ロードバランサー,リバースプロキシ
+
+# 設定ファイル
+/etc/nginx ディレクトリに配置
+
+・nginx.conf
+最初に読み込まれる設定ファイル
+
+他の設定ファイルはこのファイルから読み込まれる
+->「include /etc/nginx/conf.d/*.conf;」の指定により、
+   /etc/nginx/conf.d ディレクトリの拡張子.confファイルを 
+   nginxの設定ファイルとしてインクルードするように初期設定されている
+
+
+# ディレクティブ
+設定項目
+基本的な構成要素
+ブロック{ }だけではなく、includeなどもディレクティブ
+ブロック{ }で囲む構文 と include hoge;のようなセミコロンを使った構文がある
+-> ディレクティブによって構文が決まっている
+(http{ }とかserver{ }、location / { }など)
+
+# コンテキスト
+ブロック{ }内の記述の範囲
+(ex. httpディレクティブのブロック内は、httpコンテキストと定義される)
+ディレクティブは、どのコンテキストで使えるかが決まっている
+(ex. serverディレクティブはhttpコンテキスト内でしか使えない)
+
+# ブロック
+ブロックとは処理の一塊のことを指し、通常{}で囲われた範囲が1ブロックとなる
+
+# mainコンテキスト
+ブロックに囲まれていないところ
+
+# includeディレクティブ
+別の設定ファイルを読み込む
+引数は絶対パス か /etc/nginx/からの相対パス
+
+# user nginx;
+nginxの実行ユーザーをnginxとする
+
+# worker_processesディレクティブ
+worker の プロセス数 を定義
+nginxは、複数のワーカープロセスを、一つのマスタープロセスで制御する仕組み
+例.
+worker_processes auto;
+-> 自動的にCPUのコア数分割り当てを行う
+(ワーカープロセスは基本的にCPUのコア数と同じにしておけばよい)
+
+# error_logディレクティブ
+errorファイルのパスの指定
+
+# pidディレクティブ
+マスタープロセスのPIDを出力するパスの指定
+
+# eventsコンテキスト内
+nginxの特徴にイベント駆動型であることがよく挙げられ、それに関するコンテキスト
+worker_connectionsディレクティブは、一つのワーカーが処理できるコネクション数を指定
+チューニングのポイントになりそうですが、最初はこのままでよいかと
+例.
+events {
+    worker_connections 1024;
+}
+
+
+## httpコンテキスト
+Webサーバー共通の設定の記述
+様々なバーチャルホストの共通の設定
+
+・個別の設定
+httpコンテキストで書けるディレクティブの多くは
+httpコンテキスト内のserverコンテキストや
+serverコンテキストの中でURLのパスごとの動作を記述する locationコンテキストにも書ける
+
+# log_formatディレクティブ
+ログファイルの書式を指定し、その書式に名前をつける(mainという名前の書式を作っている)
+
+# access_logディレクティブ
+アクセスログのパスと、その書式を指定
+書式の指定には、log_formatで定義したものを使用
+
+# sendfileディレクティブ
+内部的にsendfile()システムコールを用いるかどうかを指定
+
+# tcp_nopushディレクティブ
+sendfileディレクティブ有効時に、TCP_NOPUSHオプションを有効にするかどうかを指定
+(LinuxではTCP_CORKオプション)
+有効にすると、最も大きなパケットサイズで送信する
+
+# tcp_nodelayディクレティブ
+tcp_nopushと同じく、TCP_NODELAYオプションを有効にするかどうかを指定
+小さなパケットを待たずに送信するもの
+
+(sendfile, tcp_nopus, tcp_nodelay) は高速化のためのオプションで非常に内部的なもの
+-> 難しいため基本はonにしておいてよい
+
+# keepalive_timeoutディレクティブ
+クライアントと常時接続する時間を指定
+アクセスしてくれているユーザーに対して、わざわざ繋ぎ直したりしないためのもの
+しかし、繋ぎ続けることは負荷になり、パフォーマンスとリソースのトレードオフ
+
+
+
+# client_max_body_size ディレクティブ
+サーバで取り扱うサイズの指定
+デフォルトで1MBまでのデータしか受け付けない設定
+
+
+# upstreamディレクティブ
+構文: upstream name { ... }
+幾つかのサーバ群を一つのグループとして定義
+その内部でよしなにロードバランシングを行うことができる
+グループとして定義した各サーバに対してどういうロードバランシング戦略をとるか、
+ラウンドロビンならどれくらいの重みでリクエストを流していくかなど、それなりに細かい設定を行うことができる
+
+serverディレクティブを並べて記述することで
+ロードバランサーの設定を行う
+
+# serverディレクティブ(upstreamコンテキスト)
+構文: server address [parameters];
+
+サーバのaddressとその他の parameters を定義
+アドレスはドメイン名またはIPアドレス、オプションとしてポート番号、
+あるいは"unix:"プリフィックスの後で指定されるUNIXドメインソケットで指定
+
+例.
+http {
+  upstream app1 { // 均等にアクセスを分散する
+    server 192.168.1.10:8080;
+    server 192.168.1.11:80;
+    server 192.168.1.12:8080;
+  }
+  server {
+    listen 80;
+    location / {
+      proxy_pass http://app1
+    }
+  }
+}
+
+
+
+# serverディレクティブ(httpコンテキスト)
+構文: server { ... }
+仮想サーバの設定
+複数のバーチャルサーバを運用するときには、IPベースあるいは名前ベースのバーチャルサーバとして区別する
+
+# listenディレクティブ(serverコンテキスト)
+リクエストの受付ソケット
+サーバがリクエストを受け付けるIPアドレスやポート番号あるいはUNIXドメイン ソケットを設定
+例.
+listen 80;
+
+# server_nameディレクティブ(serverコンテキスト内)
+バーチャルサーバー名の設定
+
+例.
+server_name example.com
+
+(リクエスト)
+GET / HTTP/1.1
+Host: example.com
+↑が送られると
+ホスト名(example.com) と一致するserver_nameディレクティブが設定された
+バーチャルサーバーを選び、そのserverディレクティブ内の設定が適応される。
+
+# rootディレクティブ
+ドキュメントルート(Web上に公開することのできるディレクトリのルート)のディレクトリを設定
+httpコンテキスト、serverコンテキスト、locationコンテキスト、location内のifコンテキストに記述できる
+
+例.
+root /var/www/rails/recruit_web/current/public;
+
+## locationディレクティブ
+リクエストURLに応じて設定を指定
+
+# URIのパス毎の設定
+リクエストURIのパスの条件(前方一致あるいは正規表現)が評価されて選ばれたものが適応される
+
+location プレフィックス URIのパス {
+    [locationコンテキスト]
+}
+プレフィックス	説明
+なし	        前方一致
+^~	         前方一致。一致したら、正規表現の条件を評価しない。
+=	           完全一致。パスが等しい場合。
+~	           正規表現（大文字・小文字を区別する）
+~*	         正規表現（大文字・小文字を区別しない）
+
+・評価の順番
+1. 前方一致（"=", "^~", プレフィックスなし）の条件の評価
+1-1. 最も一致する条件を選ぶ
+1-2. 選ばれた条件が、完全一致で、プレフィックスが"="であれば、そこで評価を終了し、そのlocationディレクティブを適応する。
+1-3. 選ばれた条件のプレフィックスが"^~"であれば、そこで評価を終了して、そのlocationディレクティブを適応する。
+
+2. 正規表現（"~", "~*"）の条件の評価を実施
+正規表現の条件を設定ファイルに定義した順番に評価
+一致したら、そこで評価を終了して、そのlocationディレクティブを適応
+
+3. 前方一致の評価で選ばれた条件のlocationディレクティブを適応
+
+
+# 名前付きロケーション
+正規表現処理には使われず、内部リダイレクトで使用
+
+内部リダイレクト
+->レスポンスコードに301や302を指定せずに、内部的にURIのパスの書き換えを行い、
+  その結果のページの内容を返す
+->クライアントから見るとリダイレクトしているようには見えない
+->nginxではこのような内部リダイレクトがよく使われる
+serverコンテキストにしか記述できない
+
+location @名前 {
+    [locationコンテキスト]
+}
+
+
+# proxy_set_headerディレクティブ
+locationコンテキストやserverコンテキスト、httpブロックなどで記述
+バックエンド(nginx -> webサーバー) へのリクエストにヘッダを付け加える
+
+# proxy_redirectディレクティブ
+プロキシされたサーバの応答の"Location"と"Refresh"ヘッダフィールドを どのように書き換えるべきかを指定
+(EC2 -> Nginx -> クライアント)
+
+例.
+location /one/ {
+    proxy_pass     http://upstream:port/two/;
+    proxy_redirect http://upstream:port/two/ /one/;
+    
+-> クライアント から http://upstream:port/one でリクエスト
+-> Nginx から プロキシされているサーバー に http://upstream:port/two/ の URI でリクエストを送る
+-> プロキシされているサーバー のレスポンスを返す時に 
+　　locationヘッダに http://upstream:port/one/ を書き換える 
+
+リバースプロキシでURLを書き換え(rewrite)を設定した場合は、
+URLを戻せなくなるため proxy_redirect で明示的に戻すように設定
+
+# proxy_passディレクティブ
+プロキシされたサーバへリクエストを渡す(Nginx -> EC2)
+プロキシされるサーバのプロトコルとアドレス(ドメイン名またはIPアドレス、オプションとしてポートが指定可能)と、
+locationがマップされるべき任意のURIを設定
+locationコンテキストに記述
+
+例.
+location /some/path/ {
+    proxy_set_header Host $host; # Hostフィールドに$host変数を入れる
+    proxy_set_header X-Real-IP $remote_addr; # X-Real-IPフィールドに$remote_addr変数を入れる
+    proxy_pass http://localhost:8000;
+}
+
+# try_fileディレクティブ
+指定した順番で確認と転送を実施する
+静的なファイルと動的なURLを振り分けたいことがある
+
+例.
+location / {
+    root /home/user/app/public/;
+    try_files $uri $uri/ @dinamic;
+}
+location @dinamic {
+    proxy_pass http://upstream;
+}
+-> 以下の順番で確認する
+1.　URLのパス($uri)にファイルがあるか
+2.　1がなかった場合、URLのパスにディレクトリ($uri/)があるか
+3.　12がなかった場合、指定したロケーション(@dinamic)に行く
+
+# error_pageディレクティブ
+(http, server, location, if in locationコンテキスト)
+指定されたエラーで表示されるURIを定義
+クライアントのリクエストのメソッドを“GET”に変更して指定された URI に内部的にリダイレクト
+
+例.
+error_page 404             /404.html; # 404エラーでは /404.html に内部的にリダイレクト
+error_page 500 502 503 504 /50x.html; # 500,502,503,504エラーでは /50x.htm に内部的にリダイレクト
+
+"=response"構文を使って、応答コードを違うものに変更可能
+例. error_page 404 =200 /empty.gif; # 404エラーを200に変更し /empty.gif に内部的にリダイレクト
+
+
+例.
+http {
+  log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                    '$status $body_bytes_sent "$http_referer" '
+                    '"$http_user_agent" "$http_x_forwarded_for"';
+
+  access_log  /var/log/nginx/access.log  main;
+
+  sendfile            on;
+  tcp_nopush          on;
+  tcp_nodelay         on;
+  keepalive_timeout   65;
+  types_hash_max_size 2048;
+
+  include             /etc/nginx/mime.types;
+  default_type        application/octet-stream;
+
+  # Load modular configuration files from the /etc/nginx/conf.d directory.
+  # See http://nginx.org/en/docs/ngx_core_module.html#include
+  # for more information.
+  include /etc/nginx/conf.d/*.conf;
+  ...
+}
+
+例.
+#各種ログのディレクトリ設定
+  error_log  /var/www/rails/mumu/current/log/nginx.error.log;
+  access_log /var/www/rails/mumu/current/log/nginx.access.log;
+#処理を受け取る最大許容量
+  client_max_body_size 2G;
+  upstream app_server {
+# 連携するunicornのソケットのパス
+    server unix:/var/www/rails/mumu/current/tmp/sockets/.unicorn.sock fail_timeout=0;
+  }
+  server {
+    listen 80;
+    server_name 127.0.0.1; # 自分のIPアドレスに変えてください！
+#次のリクエストが来るまでの待ち時間（秒
+    keepalive_timeout 5;
+#静的ファイルを読みに行くディレクトリ
+    root /var/www/rails/mumu/current/public;
+#キャッシュのディレクトリ
+    try_files $uri/index.html $uri.html $uri @app;
+    location @app {
+      # HTTP headers
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header Host $http_host;
+      proxy_redirect off;
+      proxy_pass http://app_server;
+    }
+#エラーページを設置する場所
+    error_page 500 502 503 504 /500.html;
+    location = /500.html {
+      root /var/www/rails/recruit_web/current/public;
+    }
+  }
+
+
+-----------------Unicorn------------------
+Rackアプリケーション用サーバー
+
+# 参考URL
+https://www.rubydoc.info/gems/unicorn
+Github はUnicorn使ってるっぽい？
+https://github.blog/2009-10-09-unicorn/
+https://techracho.bpsinc.jp/piichan1031/2010_07_09/2075
+https://devcenter.heroku.com/ja/articles/rails-unicorn
+
+CPU boundな処理においては、Pumaよりやや優れたパフォーマンスを発揮する？
+
+フォークされたプロセスを使用して複数の受信リクエストを並列に処理する Rack HTTP サーバー
+forkを使ったmaster-workerを用いている(≒マルチプロセス？:ブロッキングI/O)
+
+・ブロッキングI/O
+入出力をやっている最中は他の処理を進めないで
+入出力が終わるのを待ってるI/O（入出力処理、入出力処理をする部品）のこと
+
+# master-workerプロセス
+masterがソースコードを保持
+実際に動くのはmasterのプロセスのコピーを持ったworkerプロセス群
+なので、ソースコードを読み込む必要があるのがmasterだけであり、
+起動が早くデプロイ時のダウンタイムもない。
+また、Nginxがつなぐのはmasterのみなので、
+masterは各workerにロードバランサーのような形で
+負荷分散をしながらリクエストを送ることができる。
+つまり、WebサーバーであるNginxでリクエストを負荷分散させ、
+Rackアプリケーション用サーバーのUnicornでも負荷分散させることができるということ。
+そういった意味でも大量アクセスに対応できる環境構成にすることができると考えられる。
+
+# Unicronの弱点
+スロークライアントに弱い
+スロークライアント: シンプルにリクエストが遅い(ex.3G環境のモバイル端末など)クライアント や Slow Client Attack
+スロークライアントが接続されたら、続くクライアントはそのスロークライアントの通信が
+完了するまで完了を待たなければならないという特徴がある
+そのためNginxなどリバースプロキシを挟んで、スロークライアントをバッファしてもらう必要がある
+これは、Unicornの不具合というより仕様
+Unix哲学の「一つのことをうまくやる」に沿って作られているため
+スロークライアントのバッファは、リバースプロキシに任せるように作られている
+
+# スロークライアントの対策
+Nginxをリバースプロキシとして使えば、Unicornはレスポンスをリバースプロキシに届ければよい
+またスロークライアントが通信するのもUnicornではなく、
+リバースプロキシになるので、スロークライアントが
+長時間Unicornのプロセスを専有することを防ぐことができる
+
+# master
+unicornに送られる全ての指令を一旦受け取る役目
+
+# worker
+masterから指令を受け、実際に仕事をする役目
+
+・worker
+worker の数の指定
+例. worker = 2
+
+・timeout
+worker を削除するまでの時間
+例. timeout = 30 (->30秒経過したら)
+
+・listen
+リクエストを受け取るポート番号を指定
+(Unicorn への指令を送る窓口の指定)
+unicornに指令を送る側のプログラムはここに指定された箇所に指令を送らなければいけない
+例. config/unicorn/production.rb
+$app_dir = "/var/www/mumu/current"
+$listen = File.expand_path 'tmp/sockets/.unicorn.sock', $app_dir
+listen  $listen
+
+・preload_app
+ホットデプロイの指定
+
+・fork
+masterがworkerを生み出すプロセス
+-> before_fork、after_fork
+workerが生み出される前後で実行するタスクの定義
+
+
+
+----------------Puma-----------------
+# 参考URL
+https://www.rubydoc.info/gems/puma
+
+マルチスレッドの実装
+I/O boundな処理においては、Unicornより圧倒的に優れたパフォーマンスを発揮？
+
+Pumaはスロークライアントが来ても1つのスレッドが埋まるだけなので、
+スロークライアント対応のためのリバースプロキシは不要
+
+マルチスレッドということは逆に言うとスレッドセーフな実装をする必要があり、
+当然使用しているgemもスレッドセーフであることを保証しなければならない(たいへん
+
+
+
+----------------処理に関する用語-------------------
+# キャッシュ
+データ転送の効率のために、複数のリクエストの処理にまたがって使われる領域
+
+# バッファ
+データ転送の効率のために、1つのリクエストの処理の中で使われる領域
+
+# バッファ処理
+クライアントとの通信よりもバックエンドとの通信の方が高速
+バックエンドから送られてきたデータを一時的にメモリやディスクのバッファに貯めつつ
+クライアントに送信する(効率的！)
+バックエンドからのレスポンスが終わるとクライアントへの転送が終わっていなくても
+バックエンドとの接続をきって、バッファに貯めておいた残りのデータをクライアントに送る
+
+
+(Ruby)マルチプロセス,マルチスレッドについて
+https://qiita.com/tomboyboy/items/dc0db552088923d9ce6b
+
+# タスク
+ひとまとまりの仕事の処理単位
+
+# マルチタスク(=マルチプロセス)
+並列処理を伴う処理
+一台のコンピュータ上で複数の仕事（処理）を同時にすること
+メモリ空間が各プロセスで分離されている
+このため、プロセス間で変数の受け渡しなどは基本的にできない
+
+# 並列処理
+並列処理は並行処理に抱合される概念(並列 ∈ 並行)
+複数のプロセス(タスク？)が(複数のCoreで)同時に処理している
+実際には、CPUは一度に1つの仕事しかできない
+-> CPU のコア数に応じて並列処理できる数に制限がある
+-> CPUのcoreが1つだけの場合、並列処理というのはありえない
+
+目的: 処理を速くこなすこと
+-> ある処理を複数の処理主体で行うため、当然1つの主体で行うよりも処理時間が速い
+
+デメリット: プロセスごとにメモリ空間を持つので、合計のメモリ使用量は増大しがち
+-> linuxではCopy on writeという仕組みにより、プロセス間のメモリを可能な限り共有してくれる
+
+# スレッド
+プログラムの処理単位（のひとつ）
+タスクやプロセスより細かい処理の実行単位
+
+# マルチスレッド
+並行処理を伴う処理
+処理を同時に進行させる
+プロセス(タスク？)から複数のスレッドを作り処理を並行して行うもの
+１つのプロセスに複数のスレッドが存在し、並行して処理を行うため、
+CPU のリソースが少ない中でも効率的に処理を行うことができる
+
+メリット: 
+1つのプロセスが複数のスレッドを持つため、メモリ空間はスレッド間で共有される
+メモリ使用量は抑えられる上、実装によってはスレッドの作成や切り替えが、プロセスの作成や切り替えよりも軽い
+
+デメリット:
+メモリを介してスレッド間が影響を及ぼしあうことができるため、データ競合などのバグは発生しがち
+一般に、マルチスレッドプログラミングは考慮すべきことが多く、正しく実装するのが難しい
+
+
+# 並行処理
+並行処理は瞬間を切り取ったときには 1 つの処理をしているのですが、
+ある一定の時間でみると処理を1coreで切り替えながら複数の処理をこなしている
+
+
+# master-worker(slave)
+複数の機器や装置、ソフトウェア、システムなどが連携して動作する際に、
+一つが管理・制御する側、残りが制御される側、という役割分担を行う方式
+
+# CPU bound
+タスクを完了する時間が主に中央プロセッサ<の速度によって決定される条件を指す
+
+# I/O bound
+計算完了にかかる時間が、主に入出力操作の完了を待機するために費やされた期間によって決定される条件を指す
+
+
+# UNIXドメインソケット
+LinuxなどのUNIX系OSで実行されるプロセス間のデータ通信の終点に使われるインターフェース
+ネットワーク経由ではないローカルマシン(単一のOS)上のプロセスが利用するソケット
+UNIXドメインソケットをサポートするミドルウェアには、
+Nginx、Unicorn、Mysql、Redis、Memcachedなどがある
+例. 同じホストで nginx から php-fpm　に対して UNIX ドメインソケットで連携する
+
+# デバイスファイル
+各種デバイスの入出力のためのインターフェース
+一般のファイルを読み書きするのと同じ手順で周辺機器を操作できる
+
+
+# 仮想(バーチャル)サーバー
+1台のサーバー上で複数のOSを動かし、複数のサーバーとして運用する仕組み
+
+サーバーを仮想化すれば、CPUやメモリなどのハードウェアリソースを分割して、
+複数のアプリケーションへ効率的に配分できる
+
+サーバーの設置台数を減らせるため、導入やリプレースのコストを抑えたい企業や、
+運用負担を軽減したい企業が積極的に採用している
+従来のサーバー構築では、1台のサーバーに1つのOSやアプリケーションをインストールし、
+特定の役割をもたせるのが一般的だった
+
+1. ホストOS型
+WindowsやMacなどのホストOSに仮想化ソフトウェアをインストールし、LinuxなどのゲストOSを動かす仕組み
+仮想サーバーへのアクセスにホストOSを経由するため、複数のOSを運用すると処理速度が出にくい
+
+2. ハイパーバイザー型
+ハイパーバイザーと呼ばれる専用ソフトウェアをサーバーへ直接インストールし、
+ホストOSを経由せずにゲストOSやアプリケーションを動かす仕組み
+ハイパーバイザーを土台にして、ゲストOSを直接制御するため、ホストOS型よりも処理速度が出やすい
+既存のハードウェアによっては、ハイパーバイザー型に対応していないケースがある
+
+
+# 物理サーバー
+物理的なハードウェアリソースの上に構築されるもの
+
+
+
+---------------コンピューター----------
+# 基本構成
+・CPU(演算装置)
+演算処理、算術処理、論理演算、メモリとのデータのやりとり、入出力装置とのやりとりを行う
+
+・メモリ
+主記憶(main mamory) とも呼ばれる
+データとプログラムを記憶しておく場所
+メモリにはアドレスが振られており、
+このアドレスによってメモリを特定し、データのやりとりを行う
+
+・I/O
+入出力処理、入出力処理をする部品
+CPUとメモリ以外のキーボード、マウス、ネットワーク等の全ての装置のこと
+
+
+# WEBサーバー
+webサイトの機能を提供するサーバー
+HTMLや画像、プログラムを置いておき、
+クライアントのブラウザがアクセスしてくると
+それらのファイルを提供する
+
+
+
+## 認証・暗号化のプロセス
+
+# HTTPS
+SSL (Secure Socket Layer) / TLS(Transport Layer Security) による接続の上で、HTTPプロトコルで行う通信
+
+# SSL/TLSが証明書・公開鍵暗号を使って認証・暗号化する方法
+1. TCPハンドシェイク
+HTTPヘッダ のやり取りの前に TCPセッション が張られ、
+3つのメッセージを交換する(3ハンドシェイク:SYN,SYN ACK,ACK)
+-> HTTPヘッダも含めて暗号化される
+
+2. SSL/TLSハンドシェイク
+証明証検証、鍵生成(クライアント側)
+鍵計算(サーバー側)
+
+・流れ
+Client Hello -> Server Hello (サーバー証明書)
+-> Change Cipher Spec -> Change Cipher Spec (鍵交換)
+
+鍵の交換の部分には公開鍵暗号を使い、
+SSL/TLSのハンドシェイクが完了した後は共通鍵による暗号化通信に切り替わる
+->公開鍵暗号よりも共通鍵暗号の方が計算量が少ないため
+
+3. アプリケーションデータ通信
+
+
+
+## セッションの再開方法
+SSL/TLSハンドシェイクで共有鍵を生成する部分が最も負荷が掛かる
+-> 共有鍵をキャッシュしておくと、2回目以降のハンドシェイクの処理が大幅に軽量化する
+
+Client Hello に セッションID or チケット を送ることで
+鍵計算をスキップし、 Server Hello と Change Cipher をまとめて行う
+
+1. セッションID
+サーバー側でセッションIDを発行し、サーバーは
+セッションIDと共有鍵を結びつけて記憶しておく方法
+クライアントは再接続時にセッションIDを送信し、
+再利用できると判断されれば残りの処理を省略
+
+メリット:
+手軽にHTTPSの性能を上げられる
+
+デメリット:
+サーバー側でもキャッシュを記憶するため、
+サーバーを複数台のマシンにクラスタ化した場合にうまくセッションを再開できない
+
+
+# セッションチケット
+クライアント側のみで セッションチケット(共有鍵を暗号化したもの) を保存
+クライアントは再接続時に セッションチケット をサーバー側に送り、
+セッションチケットを復号することで共有鍵を取り出す
+
+メリット:
+クライアント側のみで情報を保管し、
+サーバー側で情報を保持しておく必要がないので
+クラスタ化にも対応しやすい
+
+デメリット:
+セッションチケットの暗号化に使われる鍵を
+長期間使い続けることは望ましくないため
+定期的に更新する必要がある
