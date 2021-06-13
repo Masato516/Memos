@@ -470,12 +470,13 @@ $ docker run -v /tmp/text ubuntu touch /tmp/text/hogefugapiyo
 ↑volumeとして実行
 -> /tmp/textというvolumeを作成し、その下にhogefugapiyoファイルを作成
 
+ボリューム一覧
 $ docker volume ls
-↑確認
 
+* ボリューム情報の閲覧
 docker volume inspect (VOLUME NAME)
 volumeの実体を見られる
-Mountpoint(=参照データの場所？)等が見られる
+マウントしてあるファイル(=参照データ)の場所が見られる
 ls -l /var/lib/docker/volumes/(Mountpoint)
 
 -v <HOST PATH>:<CONTAINER PATH>
@@ -1040,6 +1041,9 @@ gem ファイル編集
 git init
 heroku create アプリ名
 
+# 最初のコミットはrebase等がやりづらいので空コミット(--allow-empty)が良い
+git commit --allow-empty -m "first commit"
+
 # 新しいブランチを作成
 git branch 新しいブランチ名
 
@@ -1056,6 +1060,7 @@ git checkout master
 git branch
 
 # 現在のブランチに指定したブランチの情報を加える
+# 子ブランチの変更点を親ブランチに加える？
 git merge 加えるブランチ名
 git branch sample_branch
 
@@ -1104,6 +1109,25 @@ git add -A(多分上と一緒)
 # ステージングエリア→ローカルリポジトリ
 git commit -m "initial commit"
 
+# 別ブランチの任意のコミットによる修正を別のブランチに取り込む
+# conflictがあると使えない！！
+git cherry-pick <コミットID>
+
+# git cherry-pick D E J と同等の結果が得られる
+# 参考: https://liginc.co.jp/web/tool/79390
+# 参考: https://backlog.com/ja/git-tutorial/stepup/04/
+git rebase master
+
+# git rebase の中止
+git rebase --abort
+
+# 親ブランチの変更点を子ブランチに加える時はrebase,cherry-pickを使う
+# masterブランチの履歴がbugfixブランチを分岐した時より進んでしまっている場合、
+# 両方のmasterブランチでの変更内容とbugfixブランチでの変更内容を一つにまとめる必要がある
+
+# fast-forward(早送り)マージ
+# 親ブランチが分岐した時から変更されていない時に、簡単にできるマージのこと
+
 # ローカルからリモートリポジトリにpush
 git push heroku master
 heroku run rails db:migrate
@@ -1114,11 +1138,14 @@ git merge origin master
 
 # 直前のコミットの取り消し
 git reset --hard HEAD^
+
 # addを取り消す
 git reset --mixed HEAD
 git reset HEAD
+
 # 直前のコミットの取り消し（コミットのみ取り消し）
 git reset --soft HEAD^
+
 # 直前のコミットの取り消し（2つ前のコミットした状態に全てのローカルを戻す）
 # コミット後の変更を全部消したい(前回コミットした状態に戻す)
 git reset --hard HEAD^
@@ -1127,8 +1154,12 @@ git reset --hard HEAD^
 # reflog確認
 git reflog                                                                                                                                          e597fa9 HEAD@{0}: reset: moving to e597fa9
 6af4454 HEAD@{1}: commit: 戻したいコミット
+
 # 戻したいコミットに戻す
 git reset --hard 6af4454
+
+# ローカルブランチをリモートの状態に戻す
+git reset --hard origin/ブランチ名
 
 # 空のカラムを作成
 heroku run rails db:migrate
@@ -1152,8 +1183,10 @@ git push -u origin master
 #リポジトリを自分の環境に複製
 git clone https://github.com/Masato516/recruit_app.git
 git clone https://github.com/ユーザ名/REPOSITORY.git
+
 # リモートリポジトリの内容がバージョンアップされたら時などに最新版を取得
 git pull
+
 # -b ブランチ名 [対象]
 #対象のチェックアウト後に、新しいブランチを開始
 git checkout -b ブランチ名

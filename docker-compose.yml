@@ -1,0 +1,22 @@
+# 練習用のmysql
+# mysql -u root -p -h 127.0.0.1 -P 4306
+# 注意点は２つあり、
+# ・ホストはlocalhostを使用せず、IPアドレスを直接入力する
+# ・ポート番号を指定する際は、大文字のPを使用する
+version: "3"
+services:
+  mysql:
+    container_name: db_container
+    image: mysql:5.7
+    volumes:
+      - db_data:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: sample_db # データベース名
+      MYSQL_USER: root # ユーザー名
+      MYSQL_PASSWORD: password # パスワード
+      MYSQL_ROOT_PASSWORD: password # パスワード
+    ports:
+      - "4306:3306"
+
+volumes:
+  db_data:

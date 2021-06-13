@@ -1,6 +1,61 @@
 -------------------SQL----------------------
+SQLは宣言型プログラミング
+宣言型プログラミングでは対象の定義 =「何（What）を得たいか」を宣言してプログラムを構成し、
+逆にそれを得る過程・手続き・アルゴリズム =「どうやって（How）得るか」を記述しない
+すなわち、出力を得る方法ではなく、出力の性質・あるべき状態を記述することが「宣言型」である
+「どのようなデータが欲しいか」を宣言し、どのテーブルから先に見るかなどといった
+「いかにしてデータベースにアクセスするか」という命令・手続きには関与しない
+
+カッコは(　)を使う
+
+## SQLが実行される順番
+FROM → ON → JOIN → WHERE → GROUP BY → HAVING 
+→ SELECT → DISTINCT → ORDER BY → TOP (LIMIT)
+
+## SQLの構文の並び順
+SELECT → FROM → JOIN → ON → WHERE 
+→ GROUP BY → HAVING → ORDER BY
+
+
+## 論理演算子の優先順位
+NOT、AND、OR の順で演算される
+
+
 # データベースの選択
 USE DATABASES
+
+
+## SELECT 文
+
+# 対象のテーブルに格納されてるデータの確認
+SELECT * FROM テーブル名;
+
+# カラム(列)を取り出す
+SELECT カラム名1, カラム名2 FROM テーブル名;
+
+
+## INSERT 文 (値を指定したレコード追加)
+INSERT INTO の後にテーブル名を記載
+
+--INSERT文の構文（１）
+INSERT INTO	テーブル名 (カラム名,カラム名...)
+VALUES	             (値,     値     ...)
+
+その後ろの（カッコ）の中には列名をカンマ区切りで指定
+レコード追加したい値はVALUESの後ろの（カッコ）の中に、値をカンマ区切りで記載
+値が文字列の場合はクォーテーションで囲む
+
+例. EMP表に例にINSERT文を記載すると以下のようになる
+INSERT INTO	EMP (EMPNO,NAME, JOB,      MGR, HIREDATE,  SAL, COMM,DEPTNO)
+VALUES	        (9999,'SAN','SALESMAN',7698,1981-09-28,1000,500, 10)
+
+# 表の全項目に値を追加する場合は、列名は省略することが可能
+INSERT INTO	EMP
+VALUES (9999,'SAN','SALESMAN',7698,2004-06-24,1000,500,10)
+
+# 一部の項目に値を設定する場合は、表名の後ろの追加したい値を格納する項目名を記載し、VALUESに追加したい値を記載
+INSERT INTO	EMP (EMPNO,ENAME)
+VALUES	        (9999,'SAN')
 
 # テーブルへのデータの挿入(登録)
 1.テーブルの全てのカラムにデータを追加する場合にはカラム名の指定を省略できる(1レコードずつしか挿入できない)
@@ -11,32 +66,214 @@ INSERT INTO テーブル名 VALUES (1, 'Yamada');
 INSERT INTO テーブル名 (column_name1, column_name2, ...) VALUES (value1, value2, ...)
 
 
-# SELECT 文
+## UPDATE 文 (テーブルにあるレコードの更新)
+-- UPDATE文の構文（１）
+UPDATE テーブル名
+SET	   カラム名 = 値, カラム名 = 値...
+WHERE	 条件
 
-# 対象のテーブルに格納されてるデータの確認
-SELECT * FROM テーブル名;
+--UPDATE文の構文（２）
+UPDATE EMP
+SET	   SAL = SAL * 1.5
+WHERE	 EMPNO = 7369
 
-# カラム(列)を取り出す
-SELECT 列名1, 列名2 FROM テーブル名;
 
+## DELETE 文 (テーブルにあるレコードを削除)
+-- DELETE文の構文（１）
+DELETE FROM	テーブル名
+WHERE	      条件
+
+例. 従業員全員のレコードを削除
+DELETE FROM	EMP
+例. EMP表のSMITHさん（従業員番号:7369）のレコードを削除
+DELETE FROM	EMP
+WHERE	EMPNO = 7369
+
+
+## DROP 文 (テーブルとデータベースの削除)
+DROP TABLE テーブル名
+
+# テーブルがある時だけ削除
+DROP TABLE IF EXISTS テーブル名;
+
+
+## SHOW 文
+
+# 文字コードの確認(デフォルトは latin1)
+SHOW variables like '%char%';
+
+# データベースの確認
+SHOW DATABASES;
+
+# 接続中のデータベースを表示
+SHOW PROCESSLIST;
+
+# 選択したテーブルのカラム情報の確認
+SHOW COLUMNS FROM テーブル名 FROM データベース名;
+
+## SQL句
 
 # WHERE 句(条件を指定)
-select * FROM テーブル名 WHERE score <= 60
+SELECT * 
+FROM テーブル名 
+WHERE score <= 60
 
-# LIMIT 句(件数を指定してカラム(例)を取り出す)
+-- 集約関数を使う条件文を使用する場合havingを使用する。
+-- where句の中では集約関数は使えない。
+
+# ORDER BY 句(並び替え)
+SELECT   ENAME, JOB, SAL 
+FROM     EMP 
+ORDER BY SAL DESC
+
+# LIMIT 句 (件数を指定してカラム(例)を取り出す)
  (MySQL)
 SELECT * FROM テーブル名 ORDER BY id LIMIT 0(先頭の行), 10(最後の行);
  (PostgreSQL)
 SELECT * FROM テーブル名 ORDER BY id OFFSET 0(先頭の行) LIMIT 10(最後の行);
 
+# GROUP BY 句 (データをグループ化する)
+指定したカラムごとにグループ化し、集合関数の計算結果を取得できる
+[GROUP BY カラム名]のように記述
+
+--例. 
+SELECT   DEPTNO, AVG(SAL)
+FROM     EMP
+GROUP BY DEPTNO
+
+--例. WHEREによるレコードの選択
+WHERE条件によりレコードが抽出され、
+GROUP BYで指定したカラムごとにグループ化され、集合関数で計算結果が求められる
+SELECT    JOB,AVG(SAL)
+FROM	    EMP
+WHERE	    DEPTNO <> 10
+GROUP BY	JOB
+
+
+# HAVING 句 (GROUP BY句に対して抽出条件を設定)
+GROUP BY句の後ろに[ HAVING 条件式 ] と記述
+WHERE条件が  GROUP BY でグループ化される前のレコード抽出段階の条件
+HAVING条件は GROUP BY でグループ化された後のレコード抽出段階の条件
+
+重要！！！
+集約関数を使う条件文を使用する場合havingを使用
+where句の中では集約関数は使えない
+HAVING 句はWHERE 句による検索
+⇒GROUP BY によるグループ化
+⇒集計関数による集計と、列選択が終わったあとに絞り込みを行う
+
+
+
+--例.
+SELECT   JOB, MIN(SAL), MAX(SAL), AVG(SAL)
+FROM     EMP
+GROUP BY JOB
+HAVING   MAX(SAL) >= 2000
+
+
+# DISTINCT 句 (重複行の削除)
+DISTINCTキーワードはSELECT句の後ろに記載
+
+-- 抽出したレコードから重複行を削除(JOBとSALが重複するレコードを削除)
+SELECT DISTINCT JOB, SAL
+FROM	 EMP
+
+
+## 演算子
+# EXISTS 演算子 (限定述語)
+（）の中に書いてあるSQLで抽出されるレコードがある場合は真、無い場合は偽を返す
+真のときのみ外側のWHERE条件が成立し、レコードが抽出される
+-- 例.給料がもっとも高い従業員の抽出
+SELECT ENAME,SAL
+FROM	 EMP EA
+WHERE	 NOT EXISTS(
+       SELECT * FROM EMP EB
+       WHRE EB.SAL > EA.SAL
+       )
+内側のクエリで真を返した時のみ
+レコードを取り出す！
+
+
 # IN 演算子
 指定した列のデータの中から()内のいずれかの値と一致するデータだけを取り出す
-SELECT user FROM sample_db WHERE height IN (180, 1700) 
+例. sample_dbテーブルからheightが 180 もしくは 170の user を取得
+SELECT user 
+FROM   sample_db 
+WHERE  height IN (180, 170) 
+
 
 # NOT IN 演算子
 指定した列のデータの中から()内のいずれとも一致しないデータだけを取り出す
-SELECT user FROM sample_db WHERE height NOT IN (180, 1700) 
+SELECT user FROM sample_db WHERE height NOT IN (180, 1700)
 
+
+# BETWEEN 演算子
+BETWEEN演算子はWHERE句で使用
+[カラム名 BETWEEN 下限値 AND 上限値] と記述(下限値と上限値を逆に記述することはできない)
+カラムの値が下限値以上、上限値以下の場合真を返す
+例.
+SELECT ENAME, SAL
+FROM   EMP
+WHERE  SAL BETWEEN 1000 AND 2000
+以下と同じクエリ！！
+SELECT ENAME
+FROM	 EMP
+WHERE	 1000 <= SAL AND SAL <= 2000
+
+
+# NOT BETWEEN 演算子
+-- 例. BETWEEN演算子を否定
+-- [カラム名 NOT BETWEEN 下限値 AND 上限値]と記述
+-- 例.
+SELECT ENAME, SAL
+FROM   EMP
+WHERE  SAL NOT BETWEEN 1000 AND 2000
+以下と同じクエリ！！
+SELECT ENAME, SAL
+FROM   EMP
+WHERE  SAL <= 1000 OR 2000 <= SAL
+
+
+# LIKE 演算子(パターンマッチング)
+-- WHERE句で使用
+-- [カラム名 LIKE 比較文字列] と記述
+-- カラム名と比較文字列のパターンマッチングを行なう
+-- 例. Aという文字を含む従業員名を検索
+SELECT	ENAME
+FROM	EMP
+WHERE	ENAME LIKE '%A%'
+
+-- 比較文字列に使用可能なワイルドカードは以下の2文字
+-- %（パーセント）	0文字以上の任意の文字列
+-- _（アンダーバー）	1文字の任意の文字
+
+
+# ESCAPE(エスケープキーワード)
+例.
+WHERE ENAME LIKE '%?_%' ESCAPE '?'
+
+
+# NOT LIKE 演算子
+[カラム名 NOT LIKE 比較文字列]のようにLIKE演算子の前にNOTを記述
+例.
+WHERE ENAME NOT LIKE '%A%'
+
+
+
+## 集約関数
+
+# MAX関数
+例.
+SELECT MAX(SAL), MIN(SAL)
+FROM   EMP
+WHERE  JOB = 'SALESMAN'
+
+# COUNT関数
+・レコード数を求める時
+COUNT(*)で取得
+
+・データの数を求める時
+COUNT(NAME)で取得(NULLは除外)
 
 * データベースの名称
 テーブル、カラム、レコード、フィールド
@@ -68,19 +305,66 @@ select * from 社員テーブル where 社員コード = 1003
 データの並び順が社員コード順になっていないので、全件検索し該当レコードを探す動きになる
 
 
-* 制約
-・NOT NULL
+** 制約
+* NOT NULL
 NULL値を禁止
-・CHECK
+
+* CHECK
 条件を指定し、条件を満たさないデータを禁止
-・UNIQUE
+例. CHECK(AGE BETWEEN 18 AND 60)
+
+* UNIQUE
 重複したデータを禁止、複数の列に設定可能、NULLを禁止するわけではない
-・PRIMARY KEY(主キー制約)
+
+* PRIMARY KEY(主キー制約)
 一意を保証、重複とNULLを禁止、1つのテーブルに1つ
-・FOREIGN KEY(参照整合性制約、外部キー制約)
+使用例. 
+CREATE TABLE customers(
+             id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+             name VARCHAR(100) NOT NULL,
+             created_at DATETIME NOT NULL,
+             updated_at DATETIME NOT NULL,
+             PRIMARY KEY(id)  -- カラム名を指定(複数指定可能)
+             );
+
+CREATE TABLE customers(
+             -- カラムに直接指定
+             id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+             name VARCHAR(100) NOT NULL,
+             created_at DATETIME NOT NULL,
+             updated_at DATETIME NOT NULL
+             );
+
+* FOREIGN KEY(参照整合性制約、外部キー制約)
 他のテーブルの列を参照し、その列にないデータを禁止
+--親テーブル
+CREATE TABLE 親テーブル名(親カラム名 データ型 PRIMARY KEY);
+--子テーブル
+CREATE TABLE 子テーブル名
+       (子カラム名 データ型,
+       INDEX インデックス名(子カラム名), 
+       FOREIGN KEY (外部キーとする子カラム名) 
+       REFERENCES 親テーブル名(親カラム名)
+       );
+
+・親テーブルおよび子テーブルでは FOREIGN KEY 制約の対象となるカラムに対して
+  インデックスが必要(作成されない場合は自動で作成される)
+・親テーブルと子テーブルは同じストレージエンジンを使用する必要がある
+・MySQLで FOREIGN KEY を使用できるストレージエンジンは InnoDB と NDB
+・子テーブルの対象カラムと親テーブルの対象カラムは同じデータ型である必要がある
+  文字列型の場合、長さは同じである必要がないが、
+  非バイナリ型の場合は文字セットと照合順序は同じである必要がある
+
+例. FOREIGN KEY(CODE) REFERENCE BUSHO
 ・DEFAULT=値
 デフォルト値を設定
+
+
+** オプション
+
+* AUTO_INCREMENT
+指定したカラムに対してMySQLが自動的に一意のシーケンス番号を生成する機能
+
 
 
 ** サブクエリ
@@ -105,12 +389,56 @@ WHERE user_id IN (SELECT followed_id FROM relationships
                   WHERE  follower_id = 1)
                   OR user_id = 1
 このサブセレクトは集合のロジックを (Railsではなく) データベース内に保存するので、より効率的にデータを取得することができる
+
+
+## 結合
+# 内部結合(1対多の時に使うイメージ: user.prefecture みたいな？)
+
+# 複数テーブルからの問い合わせを行う場合は、FROMの後ろに表名を「,」で区切って記述
+# 「表明.項目名」という記述は、テーブルを連結して両方のテーブルに同じカラム名があった場合、どちらの項目を表示するかを指定するため
+-- EMP表とDEPT表の内部結合 (WHERE文バージョン)
+SELECT EMP.ENAME, DEPT.DNAME
+FROM   EMP, DEPT
+WHERE  EMP.DEPTNO = DEPT.DEPTNO
+
+-- EMP表とDEPT表の内部結合 (INNER JOIN句バージョン)
+SELECT     EMP.ENAME, DEPT.DNAME
+FROM       EMP
+INNER JOIN DEPT
+ON         EMP.DEPTNO = DEPT.DEPTNO
+WHERE      EMP.DEPTNO = 2  -- INNER JOINの後に記述！！
+
+# エイリアス
+SELECT E.ENAME, D.DNAME
+FROM   EMP E, DEPT D -- 表にエイリアス（別名）を付けて記述を簡便化
+WHERE  E.DEPTNO = D.DEPTNO
+
+
+
 ------------mysql-----------
+コメントアウト(3種類)
+#       から始まって行末までのコメント
+--      から始まって行末までのコメント(--の後は半角スペース必須)
+/*から*/ までのコメント(改行を許容)
+
+
 ** データ型
 
 * 文字列
-・CHAR 
-・VARCHAR (ie. VARiable CHARacter)
+・CHAR(最大格納文字数)
+文字列がテーブル作成時に指定された文字数よりも短かった場合，
+文字列の右側の末尾にスペースで補完
+・VARCHAR(最大格納文字数) (ie. VARiable CHARacter)
+指定された文字列よりも短かった場合に，データに合わせた文字列として可変長で保存される
+
+
+* 整数型
+・SMALLINT (-32768 ~ 32767)
+・INT (-2147483648 ~ 2147483647)
+・BIGINT (-9223372036854775808 ~ 9223372036854775807)
+
+UNSIGNED 属性 (例. INT UNSIGNED)
+-> 負の数値がなくなる分、扱える数値が増える(0 ~ 65535)
 
 
 ** SQL文の最後に;をつける
@@ -123,9 +451,6 @@ mysql -u root -p
 
 # ログアウト
 exit
-
-# データベースの確認
-SHOW DATABASES;
 
 # ユーザー、ホストの確認
 (DATABASEのmysqlにユーザー情報等が入っている)
@@ -146,9 +471,6 @@ USE データベース名;
 
 # 現在接続しているデータベースの確認
 SELECT database();
-
-# 接続中のデータベースを表示
-SHOW PROCESSLIST;
 
 # データベースの削除
 DROP DATABASE データベース名;
@@ -191,8 +513,6 @@ SET @n:=0;
 # ID(連番)の初期化
 ALTER TABLE `テーブル名` auto_increment = 1;
 
-選択したテーブルのカラム情報の確認
-SHOW COLUMNS FROM テーブル名 FROM データベース名;
 
 ---------AWS Mysql-----------
 CREATE USER wordpress@"%" IDENTIFIED BY 'WordPressPasswd@516';
