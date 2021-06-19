@@ -456,7 +456,7 @@ docker volume ls で見えるモノ
 ボリュームをコンテナ本体にマウント(-v)して使う
 
 
-* コンテナ と ボリューム の違い
+** コンテナ と ボリューム の違い
 コンテナ内部にデータ(ファイル)を保存しても、コンテナ破棄すると消える
 データを永続化したいときは、コンテナの外にデータを置く必要がある
 その場所のことを、ボリュームと呼ぶ
@@ -470,7 +470,7 @@ $ docker run -v /tmp/text ubuntu touch /tmp/text/hogefugapiyo
 ↑volumeとして実行
 -> /tmp/textというvolumeを作成し、その下にhogefugapiyoファイルを作成
 
-ボリューム一覧
+** ボリューム一覧
 $ docker volume ls
 
 * ボリューム情報の閲覧
@@ -483,6 +483,8 @@ ls -l /var/lib/docker/volumes/(Mountpoint)
 ホスト側のパスを指定
 :で区切ることで左に指定したホストのパスを右に指定したコンテナのパスと共有するという意味になる
 
+** ボリューム削除
+docker volume rm project_db-data
 
 * Data Volume コンテナ(手法)
 データだけを持つための

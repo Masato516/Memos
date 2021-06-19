@@ -1,6 +1,54 @@
+## Rubyは () を半角スペースで省略できる
+
 # 入力例: 3 5 7
 # 入力値を整数の配列に
 input_line = gets.chomp.split().map( &:to_i )
+
+## メソッドの引数
+
+# 引数の数が不定な場合(*変数名)を使う
+# *変数名に入れられた値は配列になる
+def foo(*args)
+  args
+end
+p foo(1)      #=> [1]
+p foo([1, 1]) #=> [1, 1]
+
+# キーワード引数
+# ハッシュを引数にする
+# デフォルトがあってもなくても良い
+def volume(x: , y: 1, z: 1)
+  [x, y, z]
+end
+p volume(x: 1, y:10)  # => [1, 10, 1]
+p volume(y: 10)       # => missing keyword: :x (ArgumentError)
+
+# 定義に存在しないキーワード引数を受け取る
+def foo(x: 0, y: 0, z: 0, **args)
+  [x, y, z, args]
+end
+p foo             #=> [0, 0, 0, {}]
+p foo()           #=> [0, 0, 0, {}]
+p foo(i: 2, h: 6) #=> [0, 0, 0, {:i=>2, :h=>6}]
+
+## メソッドの呼び出し時
+# 引数に配列を入れる
+# 引数で配列を展開(**ar)
+def hoge(a, b, c)
+  [a, b, c]
+end
+args1 = [10, 100]
+p hoge(1, 2, *args1) #=> wrong number of arguments (given 4, expected 3)
+p hoge(1, *args1) #=> [1, 10, 100]
+
+# 引数にハッシュを入れる
+# メソッドの引数にハッシュを入れる場合は{ }を省略できる
+def hoge(arg)
+  arg
+end
+p hoge({a: 1, b: 2}) #=> {:a=>1, :b=>2}
+p hoge(a: 1, b: 2)   #=> {:a=>1, :b=>2}
+
 
 #配列内に配列を挿入(多次元配列になる)
 example1_arry.push(example2_arry)

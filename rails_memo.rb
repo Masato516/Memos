@@ -811,6 +811,225 @@ DELETEリクエストを送信してリレーションシップをdestroy(削除
   <%= f.submit "Unfollow", class: "btn" %>
 <% end %>
 
+
+------------フォームオブジェクト------------
+「非ActiveRecordモデル」のインスタンス
+
+データベースと無関係なフォームやデータベーステープルと
+1対 1 に結び付いていないフォームをform_withメソッドで生成できる
+
+include Active Model::Model
+-> form_withのmodelオプションに指定できるようになる
+
+attr_accessorで定義している属性は、 フォームのフィールド名となる
+-> インスタンス変数の中身を参照・変更できるようにする
+
+# formオブジェクト内に必要な記述
+・formオブジェクトを使用するモデルに設定していたバリデーションの移行
+・コントローラでformオブジェクトを使えるようにする記述
+・モデルを介すための記述
+
+-------------accepts_nested_attributes_for-----------------
+モデルで記述したaccepts_nested_attributes_forにより
+paramsに_attributes: []を一緒に追加して送ることができる
+
+ストロングパラメーターは
+_attributes: []などの配列を一番後ろに書かないといけない！！
+
+Order.new.order_details_attributes= 関数で
+Orderの関連であるOrderDetailモデルを編集できるようになる
+
+allow_destroy: true と宣言することにより、関連の削除が可能になる
+allow_destroy 指定で order_detailsのモデルに _destroy という変数が追加される(controllerで削除するため)
+この変数に true を入れることにより、 モデル保存時に関連である order_details が削除される
+
+# 1. 記述例(JobとInterview版).
+# accepts_nested_attributes_for :interviews, allow_destroy: true
+# -> Jobの関連であるInterviewモデルを編集できる
+# 2. パラメーター例
+# job"=>{"public_status"=>"false",
+#     ・
+#     ・
+#   "interviews_attributes"=>{"0"=>{"employee_name"=>"名無し社員0", "question1"=>"会社しんどい？", ・・・},
+#                             "1"=>{"employee_name"=>"名無し社員1", "question1"=>"会社やめたい？", ・・・}
+
+## accepts_nested_attributes_for の記述とパラメータ
+1. 記述例(OrderとOrderDetail版)
+accepts_nested_attributes_for :order_details, allow_destroy: true
+-> Orderの関連であるOrderDetailモデルを編集できるようになる
+2. 生成されるパラメーター例
+app/controller/orders_controller.rb#update で受け取るparamsのサンプル
+"form_order"=>
+ {"name"=>"A機械製造1031注文",
+  "corporation_id"=>"1",
+  "order_details_attributes"=>
+     {"0"=>{"id"=>"1", "product_id"=>"1", "unit_price"=>"2000", "quantity"=>"3", "_destroy"=>"false"},
+      "1"=>{"id"=>"2", "product_id"=>"4", "unit_price"=>"10000", "quantity"=>"4", "_destroy"=>"false"}
+     }
+ }
+
+# 上記パラメータをOrderモデル(親)に引き渡すことで、注文、注文明細を更新することが可能
+controller にて
+# 注文、注文明細を新規作成
+@order = Form::Order.new(params[:form_order])
+
+# 注文、注文明細を更新
+@order.update_attributes(params[:form_order])
+
+注文明細(子モデル)削除の際は、単に領域を削除してはいけない
+指定した受注明細を消すために、
+_destroyとid のペアを パラメータとしてコントローラに渡してあげる必要がある
+
+------------------fields_for----------------------
+## 同じフォームで別のモデルオブジェクトも編集できる
+
+## 利用条件
+・fields_for の第一引数に渡した変数名の変数にアクセスできること
+  (親モデルに has_many を記述)
+・指定した変数が xxx_attributes= (xxx は変数名)という形式で更新できること
+  (accepts_nested_attributes_for 関数を利用)
+
+----------------ActiveModel------------
+## ActiveModel::Model
+ActiveModel::Modelをincludeするだけで、
+オブジェクトをコントローラやビューのメソッドで利用できる
+また、ActiveRecordのようにオブジェクトを属性のハッシュで
+初期化したり、バリデーションを設定して実行できる
+
+### ActiveModel::Attributes
+型を持つ属性の定義を容易にするモジュール
+例.
+class Person
+  include ActiveModel::Attributes
+
+  attributes :name, :string
+  attributes :age,  :integer
+end
+
+person = Person.new
+person.name = "Nate"
+#=> "Nate"
+person.name
+#=> "Nate"
+person.age = "40"
+#=> "40"
+person.age
+#=> 40
+
+# 属性にデフォルト値を設定する場合
+attribute :name, :string, default: "名無しユーザー"
+
+
+### ActiveModel::Callbacks
+コールバック機能の実装を容易にしてくれるモジュール
+例.
+class Person
+  extend ActiveModel::Callbacks 
+
+  attr_accessor :created_at, :updated_at
+
+  define_model_callbacks :save # コールバックの対象となるメソッド名を選択
+  before_save :record_timestamps
+
+  def save
+    # コールバックの対象となるメソッドの中身をrun_callbacksメソッドのブロックで囲う必要あり
+    run_callbacks :save do
+      true #saveメソッドの中身をここに記述
+    end
+  end
+
+  private
+
+  def record_timestamps
+    current_time = Time.current
+
+    self.created_at ||= current_time
+    self.updated_at ||= current_time
+  end
+end
+
+irb(main):001:0> person = Person.new
+#<Person:0x00007f80fa223058>
+irb(main):002:0> [person.created_at, person.updated_at]
+[nil, nil]
+irb(main):003:0> person.save
+true
+irb(main):004:0> [person.created_at, person.updated_at]
+9 Mar 2020 08:01:32 UTC +00:00, Sun, 29 Mar 2020 08:01:32 UTC
+
+
+### ActiveModel::Validations
+属性のバリデーション機能の実装を容易にしてくれるモジュール
+validates_uniqueness_ofのようなデータベースのレコードを参照するヘルパーを除いて、
+ActiveRecordと同じバリデーションヘルパーを提供します(リスト12.7)
+
+リスト12.7
+ActiveModel::Validationsの利用例
+  class Person
+  include ActiveModel::Validations
+  attr_accessor :name, :age
+  validates :name, presence: true, length: ( maximum: 100 ]
+  validates_numericality of :age, greater_than_or_equal_to;
+end
+person = Person.new
+=> #<Person:0x@0007ff8e153a6d8>
+person.name
+=> "David"
+person.valid?
+=> false
+person.errors.messages
+=> (:age=>["is not a number"]]
+person.errors.full_messages
+=> ["Age is not a number"]
+
+ActiveModel::validationsをincludeするだけで、
+ActiveRecordのようにバリデーションを設定して実行できる
+なお、このモジュールをincludeしただけでは、before.validation、
+after_validationコールバックは利用できない！！
+これらを利用するには、さらにActiveModel::Validations::Callbacksをincludeする(リスト12.8)
+
+リスト12.8
+ActiveModel::Validations::Callbacksの利用例
+class Person
+  include ActiveModel: :Validations
+  include ActiveModel : :Validations: :Callbacks
+
+  attr_accessor :name
+  before_validation :normalize_name, if: -> ( name.present? )
+
+  private
+
+  def normalize_name
+    self.name = name.downcase.titleize
+  end
+end
+
+person = Person.new
+=> #<Person:0x00007f86d7bafcd8>
+person.name = "david"
+=> "daVid"
+person.valid?
+=> true
+person.name
+=> "David"
+
+ActiveModel::Validationsにあらかじめ組み込まれているバリデーションヘルバー
+各ヘルバーの詳細については、「2-2モデルを扱う」またはRailsガイドを参照
+ㆍabsence
+ㆍacceptance
+ㆍconfirmation
+・exclusion
+・format
+・inclusion
+ㆍlength
+・numericality
+ㆍpresence
+
+これらのヘルパーは、validates_absence_ofのようなメソッドを呼び出すか、
+validatesメソッドの呼び出し時のオプションに指定することで利用できる
+また、これらのエラーメッセージを英語以外の言語に翻訳したい場合には、
+rails-il8n gemを導入したうでリスト12.9のようなロケールファイルを用意する
+版ルする例
 -----------Active Record-------------
 「RubyとSQLの翻訳機」
 Rubyで直感的に書ける
@@ -894,6 +1113,10 @@ The before_save occurs slightly before the before_create.
 To the best of my knowledge, nothing happens between them; 
 but before_save will also fire on Update operations, 
 while before_create will only fire on Creates.
+
+boolean型のバリデーション
+validates :public_status, inclusion: { in: [true, false] }
+validates :public_status, exclusion: { in: [nil] }
 -------------マイグレーション(ActiveRecord)----------------
 Active Recordの機能の1つであり、データベーススキーマを長期にわたって
 安定して発展・増築し続けることができるようにするための仕組み
@@ -1401,18 +1624,6 @@ https://stackoverflow.com/questions/55596186/use-a-single-form-with-to-create-an
   <%= f.submit "更新", class: 'signup-submit' %>
 <% end %>
 
-------------フォームオブジェクト------------
-「非ActiveRecordモデル」のインスタンス
-
-フォームオプジェクトを用いると、
-データベースと無関係なフォームやデータベーステープルと
-1対 1 に結び付いていないフォームをform_withメソッドで生成できる
-
-* ポイント
-1. ActiveRecord::Baseクラスを継承しないこと
-2. Active Model::Modelをincludeする 
-これで、 form_withのmodelオプションに指定できるよう になる
-attr_accessorで定義している属性は、 そのままフォームのフィールド名となる
 
 ------------管理者権限----------
 admin?
