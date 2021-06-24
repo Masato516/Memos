@@ -445,6 +445,9 @@ SELECT COUNT(*)
 FROM   scores s
 GROUP BY s.exam_id
 
+SELECT COUNT(*)
+FROM   
+
 
 select "all_order" ,count(*) as count from order_details
 union
