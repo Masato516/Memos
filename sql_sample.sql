@@ -277,6 +277,19 @@ INSERT INTO items (id, name, price, created_at, updated_at)
                   (null, 'ジャンパー', 2500, now(), now()),
                   (null, 'ソックス', 600, now(), now())
 
+INSERT INTO items (name,         price)
+            VALUES('シャツ',      1000),
+                  ('パンツ',       950),
+                  ('マフラー',    1200),
+                  ('ブルゾン',    1800),
+                  ('タンクトップ', 1300),
+                  ('ジャンパー',   2500),
+                  ('ソックス',     600);
+
+SHOW columns FROM items;
+
+
+
 DELETE FROM  items
        WHERE items.name = 'タンクトップ';
 
@@ -288,7 +301,7 @@ CREATE TABLE `items2` (
                     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                     `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                     PRIMARY KEY (id)
-                    )
+                    );
 
 INSERT INTO items2 (id, name,    price, created_at, updated_at)
             VALUES(1, 'シャツ',   1000, now(),      now()),
@@ -296,13 +309,12 @@ INSERT INTO items2 (id, name,    price, created_at, updated_at)
                   (3, 'マフラー', 1200, now(),      now()),
                   (4, 'ブルゾン', 1800, now(),      now());
 
-INSERT INTO items (name, price)
-            VALUES('タンクトップ', 1300),
-                  ('ジャンパー', 2500),
-                  ('ソックス', 600)
+INSERT INTO items2 (name, price)
+            VALUES('タンクトップ', 1300, now(), now()),
+                  ('ジャンパー', 2500, now(), now()),
+                  ('ソックス', 600, now(), now())
 
-SHOW columns
-FROM items
+SHOW columns FROM items
 
 
 Q7 B商会の受注金額の合計を算出
@@ -319,13 +331,51 @@ INNER JOIN order_details od ON o.id = od.order_id
 INNER JOIN items i ON od.item_id = i.id
 INNER JOIN customers c ON o.customer_id = c.id AND c.name = 'B商会'
 
+SELECT SUM(od.item_quantity * i.price) AS sum_price
+FROM   order_details od
+INNER JOIN items i ON i.id = od.item_id
+INNER JOIN orders o ON o.id = od.order_id
+INNER JOIN customers c ON c.id = o.customer_id AND c.name = 'B商会'
+
+
 Q8 商品(itemss)から受注明細(order_details)で使われている
    商品(items.id,items.name)を求めましょう、
    3 種類の SQL を作成しましょう
 
-SELECT od.item_id, i.name
-FROM   order_details od
+SELECT DISTINCT i.id, i.name
+FROM items i
+INNER JOIN order_details od ON od.item_id = i.id;
+
+SELECT i.id, i.name
+FROM   items i
+WHERE  EXISTS ( -- 商品のIDが注文詳細の商品番号にある場合,trueを返す
+       SELECT * FROM order_details od where i.id = od.item_id
+);
+
+SELECT *
+FROM   scores s
+WHERE  EXISTS ( -- 商品のIDが注文詳細の商品番号にある場合,trueを返す
+       SELECT * FROM exams e 
+       where e.score = s.item_id
+       AND   e.score >= 80
+);
+
+
+SELECT s.id, s.user_id, s.exam_id, s.score
+FROM   scores s
+INNER JOIN exams e ON e.id = s.exam_id
+WHERE s.score >= 80 AND s.exam_id != 1;
+ORDER BY s.score DESC;
+
+SELECT * COUNT()
+FROM users u
 INNER JOIN 
+
+
+SELECT e.name, AVG(e.score), MAX(e.score)
+FROM exams e
+INNER JOIN scores s ON s.exam_id = e.id
+GROUP BY e.name;
 
 
 -- SELECT 社員番号, 氏名, 課コード, 内線番号
@@ -358,3 +408,45 @@ INNER JOIN
 --        FROM	 部屋の管理部門
 --        WHERE	 部門 = 'A1'
 -- )
+
+
+SELECT u.name user_name, e.name exam_name, c.name class_name, s.score
+FROM users
+INNER JOIN scores s ON s.user_id = u.id
+INNER JOIN exmas e ON e.id = s.exam_id
+INNER JOIN classes c ON c.id = e.class_id;
+
+
+SELECT u.name user_name, e.name exam_name, c.name class_name, s.score
+FROM users
+INNER JOIN (
+      SELECT user_id, exam_id, SUM(score) 
+      FROM   scores
+      GROUP BY user_id
+)
+
+
+SELECT u.name user_name, e.name exam_name, c.name class_name, s.score score
+FROM users u
+INNER JOIN scores s ON s.user_id = u.id
+INNER JOIN exams e ON e.id = s.exam_id
+INNER JOIN classes c ON c.id = e.class_id
+WHERE s.score >= 90 AND u.id != 1;
+
+
+-- 全てのユーザーと各ユーザーのテストの数
+
+SELECT COUNT(*) num_of_users_exam
+FROM   users u
+CROSS JOIN scores s
+GROUP BY u.id;
+
+SELECT COUNT(*)
+FROM   scores s
+GROUP BY s.exam_id
+
+
+select "all_order" ,count(*) as count from order_details
+union
+select b.id , count(a.item_id) count
+from order_details a right outer join items b on a.item_id = b.id  group by b.id;

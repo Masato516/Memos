@@ -183,6 +183,13 @@ FROM	 EMP
 # EXISTS 演算子 (限定述語)
 （）の中に書いてあるSQLで抽出されるレコードがある場合は真、無い場合は偽を返す
 真のときのみ外側のWHERE条件が成立し、レコードが抽出される
+
+-- tbl_memberのno列に5があれば、すべてのデータを表示
+SELECT * FROM tbl_member
+WHERE EXISTS (
+      SELECT * FROM tbl_member WHERE no = 5
+);
+
 -- 例.給料がもっとも高い従業員の抽出
 SELECT ENAME,SAL
 FROM	 EMP EA
@@ -199,7 +206,7 @@ WHERE	 NOT EXISTS(
 例. sample_dbテーブルからheightが 180 もしくは 170の user を取得
 SELECT user 
 FROM   sample_db 
-WHERE  height IN (180, 170) 
+WHERE  height IN (180, 170)
 
 
 # NOT IN 演算子
@@ -513,7 +520,15 @@ SET @n:=0;
 # ID(連番)の初期化
 ALTER TABLE `テーブル名` auto_increment = 1;
 
-
+## カラムデフォルト値の追加設定と解除 (変更するものにより、文法が大きく異なる)
+ALTER TABLE テーブル名 
+      ALTER COLUMN 列名 
+      SET DEFAULT デフォルト値;
+      
+# 作成日時を CURRENT_TIMESTAMP に変更する場合は制約の追加(MODIFY)を使う
+ALTER TABLE  items 
+      MODIFY updated_at timestamp
+      DEFAULT CURRENT_TIMESTAMP;
 ---------AWS Mysql-----------
 CREATE USER wordpress@"%" IDENTIFIED BY 'WordPressPasswd@516';
 @は接続元
