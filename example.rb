@@ -1,61 +1,184 @@
+# class Num2Eng
+#   # 数字と英語を結びつける
+#   NUM_ENG = {
+#       '0' => 'zero',
+#       '1' => 'one',
+#       '2' => 'two',
+#       '3' => 'three',
+#       '4' => 'four',
+#       '5' => 'five',
+#       '6' => 'six',
+#       '7' => 'seven',
+#       '8' => 'eight',
+#       '9' => 'nine',
+#       '10' => 'ten',
+#       '11' => 'eleven',
+#       '12' => 'twelve',
+#       '13' => 'thirteen',
+#       '14' => 'fourteen',
+#       '15' => 'fifteen',
+#       '16' => 'sixteen',
+#       '17' => 'seventeen',
+#       '18' => 'eighteen',
+#       '19' => 'nineteen',
+#       '20' => 'twenty',
+#       '30' => 'thirty',
+#       '40' => 'fourty',
+#       '50' => 'fifty',
+#       '60' => 'sixty',
+#       '70' => 'seventy',
+#       '80' => 'eighty',
+#       '90' => 'ninety'
+#   }
 
-# CSVライブラリを読み込む
-require 'csv'
-# 入力値を取得
-output_type = ARGV[0]
-file_name   = ARGV[1]
-# 科目数
-subjects_num = 6
+#   def get (num)
+#     if num.size == 1
+#       NUM_ENG[num]
+#     elsif num.size == 2
+#       get_ten(num)
 
-# 落第者のIDを出力する場合
-if output_type == "dropouts"
-  puts "ID" # ヘッダー
-  # CSVデータの各行を出力
-  CSV.foreach(file_name, headers: true) do |csv|
-    # 点数をINTに変換し、scoreに代入
-    scores = csv[1..6].map(&:to_i)
-    # 49点以下の数を取得
-    failure_num = scores.each.count{|n| n <= 49}
-    if failure_num >= 2 #49点以下のテストが２つ以上ある時
-      puts csv["ID"]
-    end
-  end
+#     elsif num.size == 3
+#       get_hundred(num)
+#     elsif num.size == 4
+#       get_thousand(num)
+#     end
+#   end
 
-# 最高平均点と最低平均点をとった学生のIDを出力
-elsif output_type == "top-vs-bottom"
-  high_score = 0 # 最高点を入れるための変数
-  low_score = 100 # 最低点を入れるための変数
-  mean_scores_table = [] # IDと平均値を入れる配列
-  # CSVデータの各行を出力
-  CSV.foreach(file_name, headers: true) do |csv|
-    id = csv["ID"]
-    # 点数をINTに変換し、各学生のテストの平均値を算出
-    mean_score = csv[1..6].map(&:to_i).sum.fdiv(subjects_num)
-    # 最高点を取得(今までの平均値で最も大きい値を代入)
-    high_score = mean_score if mean_score > high_score
-    # 最低点を取得(今までの平均値で最も小さい値を代入)
-    low_score = mean_score if mean_score < low_score
-    # IDと平均値を配列に追加
-    mean_scores_table.append([id, mean_score])
-  end
-  # 答えを入れるための配列
-  answers = []
-  # idと平均値が入っている二次元配列の中で、最高点と最低点を持つidと点数をanswersに挿入
-  mean_scores_table.each do |arry|
-    id = arry[0]
-    mean_score = arry[1]
-    if mean_score == high_score 
-      answers.append([id, high_score])
-    elsif mean_score == low_score
-      answers.prepend([id, low_score])
-    end
-  end
-  # 答えの標準出力
-  puts "ID,Mean"
-  answers.each do |answer|
-    puts "#{answer[0]},#{sprintf("%2.2f", answer[1])}"
-  end
+#   private
+#   def get_one (num)
+#     NUM_ENG[num]
+#   end
+
+#   def get_ten (num)
+#     if num.to_i < 20
+#       NUM_ENG[num]
+#     elsif num.to_i % 10 == 0
+#       NUM_ENG[num]
+#     else
+#       NUM_ENG[num[0] + '0'] + '-' + NUM_ENG[num[1]]
+#     end
+#   end
+
+#   def get_hundred (num)
+#     if num.to_i % 100 == 0
+#       NUM_ENG[num[0]] + ' hundred'
+#     else
+#       NUM_ENG[num[0]] + ' hundred ' + get_ten(num[1..2])
+#     end
+#   end
+
+#   def get_thousand (num)
+#     if num.to_i % 1000 == 0
+#       NUM_ENG[num[0]] + ' thousand'
+#     elsif num.to_i % 100 == 0
+#       get_ten(num[0..1]) + ' hundred'
+#     else
+#       get_ten(num[0..1]) + ' hundred ' + get_ten(num[2..3])
+#     end
+#   end
+
+#   def get_million (num)
+#     if num.to_i % 10000 == 0
+#       NUM_ENG[num[0]] + ' thousand'
+#     end
+#   end
+  
+
+# end
+
+# hoge = Num2Eng.new
+# p hoge.get("100")
+
+rest_num = gets.chomp.to_i
+
+answer = ""
+
+billion_num = rest_num / 1000**3
+if billion_num >= 1
+  answer << 
 end
+rest_num = rest_num % 1000**3
+
+million_num = rest_num / 1000**2
+if million_num >= 1
+  answer << 
+end
+rest_num = rest_num % 1000**2
+
+thousand_num = est_num % 1000**1
+if thousand_num >= 1
+  
+  answer << 
+end
+rest_num = rest_num % 1000*1
+
+one_num = rest_num % 1
+if one_num >= 1
+  
+  answer << 
+end
+rest_num = rest_num % 1
+
+
+
+
+# # CSVライブラリを読み込む
+# require 'csv'
+# # 入力値を取得
+# output_type = ARGV[0]
+# file_name   = ARGV[1]
+# # 科目数
+# subjects_num = 6
+
+# # 落第者のIDを出力する場合
+# if output_type == "dropouts"
+#   puts "ID" # ヘッダー
+#   # CSVデータの各行を出力
+#   CSV.foreach(file_name, headers: true) do |csv|
+#     # 点数をINTに変換し、scoreに代入
+#     scores = csv[1..6].map(&:to_i)
+#     # 49点以下の数を取得
+#     failure_num = scores.each.count{|n| n <= 49}
+#     if failure_num >= 2 #49点以下のテストが２つ以上ある時
+#       puts csv["ID"]
+#     end
+#   end
+
+# # 最高平均点と最低平均点をとった学生のIDを出力
+# elsif output_type == "top-vs-bottom"
+#   high_score = 0 # 最高点を入れるための変数
+#   low_score = 100 # 最低点を入れるための変数
+#   mean_scores_table = [] # IDと平均値を入れる配列
+#   # CSVデータの各行を出力
+#   CSV.foreach(file_name, headers: true) do |csv|
+#     id = csv["ID"]
+#     # 点数をINTに変換し、各学生のテストの平均値を算出
+#     mean_score = csv[1..6].map(&:to_i).sum.fdiv(subjects_num)
+#     # 最高点を取得(今までの平均値で最も大きい値を代入)
+#     high_score = mean_score if mean_score > high_score
+#     # 最低点を取得(今までの平均値で最も小さい値を代入)
+#     low_score = mean_score if mean_score < low_score
+#     # IDと平均値を配列に追加
+#     mean_scores_table.append([id, mean_score])
+#   end
+#   # 答えを入れるための配列
+#   answers = []
+#   # idと平均値が入っている二次元配列の中で、最高点と最低点を持つidと点数をanswersに挿入
+#   mean_scores_table.each do |arry|
+#     id = arry[0]
+#     mean_score = arry[1]
+#     if mean_score == high_score 
+#       answers.append([id, high_score])
+#     elsif mean_score == low_score
+#       answers.prepend([id, low_score])
+#     end
+#   end
+#   # 答えの標準出力
+#   puts "ID,Mean"
+#   answers.each do |answer|
+#     puts "#{answer[0]},#{sprintf("%2.2f", answer[1])}"
+#   end
+# end
 
 
 # n    = gets.to_i  # 与えられる数値の数
