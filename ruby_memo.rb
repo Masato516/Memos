@@ -1,3 +1,69 @@
+## エラー
+# unterminated string meets end of file：引用符の閉じ忘れ
+# parse error：文法間違い。ifやwhileに対するend忘れであることが多い。
+# undefined method....：メソッドのスペルミス
+
+## 2つの配列からハッシュを生成
+keys = %w(ushi tori)
+vals = %w(beef chicken)
+hash = Hash[keys.zip vals]
+
+## 順列
+# combination(引数)
+# combinationの引数は選び出す要素の個数を指定
+array = [1,2,3,4]
+p array.combination(3).to_a
+#=> [[1, 2, 3], [1, 2, 4], [1, 3, 4], [2, 3, 4]]
+# 重複している要素がある場合
+array = [1,2,2,3]
+p array.permutation(4).to_a
+#=> [[1, 2, 2, 3], [1, 2, 3, 2], [1, 2, 2, 3], [1, 2, 3, 2], [1, 3, 2, 2], [1, 3, 2, 2], [2, 1, 2, 3], [2, 1, 3, 2], [2, 2, 1, 3], [2, 2, 3, 1], [2, 3, 1, 2], [2, 3, 2, 1], [2, 1, 2, 3], [2, 1, 3, 2], [2, 2, 1, 3], [2, 2, 3, 1], [2, 3, 1, 2], [2, 3, 2, 1], [3, 1, 2, 2], [3, 1, 2, 2], [3, 2, 1, 2], [3, 2, 2, 1], [3, 2, 1, 2], [3, 2, 2, 1]]
+
+## 組み合わせ
+array = [1,2,3]
+p array.permutation(3).to_a
+#=> [1, 2, 3], [1, 3, 2], [2, 1, 3], [2, 3, 1], [3, 1, 2], [3, 2, 1]]
+
+# 要素の重複を許可する場合は repeated_combination や repeated_permutation が利用できる
+
+## 順列(combination)、組み合わせ(permutation)、factorial(階上)の数を数える
+# 内部の処理的には配列のパターンを全て列挙しているので、大きな値になってくると時間がかかる
+array = (1..20).to_a
+p array.permutation(5).to_a.count # n_P_k
+p array.combination(5).to_a.count # n_C_k
+#=> 1秒ほど掛かる
+# Integerクラスをオープンして「combination」「permutation」「factorial」メソッドを定義
+class Integer
+  def combination(k)
+    return 1 if k.zero?
+
+    (self - k + 1..self).inject(:*) / k.factorial
+  end
+
+  def permutation(k)
+    return 1 if k.zero?
+
+    (self - k + 1..self).inject(:*)
+  end
+
+  def factorial
+    return 1 if self.zero?
+
+    (1..self).inject(:*)
+  end
+end
+3.factorial => 6
+0.factorial => 1
+10.factorial => 3628800
+4.combination(1) => 4
+4.combination(0) => 1
+10.combination(5) => 252
+3.permutation(2) => 6
+20.permutation(5) => 1860480
+20.combination(5) => 15504
+
+
+
 ## コマンドラインの引数
 # 配列として取得
 ARGV

@@ -1,3 +1,203 @@
+# hoge("GET", "/hello") == ["200 OK", "こんにちは"]
+# hoge("GET", "/aaa") == ["404 NotFound", "ないです"]
+
+# responses = {
+#   ["GET", "/hello"]: ["200 OK", "こんにちは"]
+# }
+
+# def hoge(method, path)
+#     responses[[method, path]]
+#     if method == "GET" && path == "/hello"
+#         ["200 OK", "こんにちは"]
+#     elsif method == "GET" && path == "/bye"
+#         ["200 OK", "さよなら"]
+#     elsif method == "POST" && path == "/bye"
+#         ["200 OK", "ばいばい"]
+#     else
+#         ["404 NotFound", "ないです"]
+#     end
+# end
+
+
+# def hello(method)
+#     if method == "GET"
+#       .. 
+#     end
+# end
+
+
+# array = [1,2,2,3]
+
+# p array.permutation(4).to_a
+
+
+# # Arrayクラスに入れ替えを行なうメソッドを追加
+# class Array
+#   def swap!(a, b)
+#     self[a], self[b] = self[b], self[a]
+
+#     self
+#   end
+
+#   def swap(a, b)
+#     self.dup.swap!(a, b)
+#   end
+# end
+
+
+# input_line = gets.chomp.split(" ").map(&:to_i)
+# # たて線の数とよこ線の数を取得
+# side_num, vertical_num = input_line
+# # よこ線のスタートする線の位置
+# start_point_arr = gets.chomp.split(" ").map(&:to_i)
+# # あみだくじの下の番号
+# target_numbers = gets.chomp.split(" ").map(&:to_i)
+
+# ## 本来あるべき下の番号を求める
+# # 上の番号を生成
+# upper_numbers = (1..side_num).to_a
+# # たて線の数だけ数値の入れ替えをおこなう
+# i = 0
+# while i < vertical_num
+#   start_point = start_point_arr[i]
+#   upper_numbers.swap!(i, i+1)
+#   i += 1
+# end
+# answer_numbers = upper_numbers
+
+# swap_point = []
+# answer_numbers.map.with_index {|number, index|
+#   swap_point << index if number != target_numbers[index]
+# }
+
+# # 両隣の数値を入れ替えるだけで済む場合
+# if swap_point.length == 2 && (swap_point[1] - swap_point[0]) == 1
+#   answer_point = vertical_num + 1, swap_point[0] + 1
+# # 
+# # elsif 
+
+# # 入れ替えることが出来ない場合
+# else
+#   answer_point = -1
+# end
+
+# puts answer_point
+
+
+# # Arrayクラスに入れ替えを行なうメソッドを追加
+# class Array
+#   def swap!(a, b)
+#     raise ArgumentError unless a.between?(0, self.count-1) && b.between?(0, self.count-1)
+
+#     self[a], self[b] = self[b], self[a]
+
+#     self
+#   end
+
+#   def swap(a, b)
+#     self.dup.swap!(a, b)
+#   end
+# end
+
+# input_line = gets.chomp.split(" ").map(&:to_i)
+# # たて線の数とよこ線の数を取得
+# side_num, vertical_num = input_line
+# # よこ線のスタートする線の位置
+# start_point_arr = gets.chomp.split(" ").map(&:to_i)
+# # あみだくじの下の番号
+# target_numbers = gets.chomp.split(" ").map(&:to_i)
+
+# ## 本来あるべき下の番号を求める
+# # 上の番号を生成
+# upper_numbers = (1..side_num).to_a
+# # たて線の数だけ数値の入れ替えをおこなう
+# i = 0
+# while i < vertical_num
+#   start_point = start_point_arr[i]
+#   upper_numbers.swap!(i, i+1)
+#   i += 1
+# end
+# answer_numbers = upper_numbers
+
+# swap_point = []
+# answer_numbers.map.with_index {|number, index|
+#   swap_point << index if number != target_numbers[index]
+# }
+
+# if swap_point.length == 2 && (swap_point[1] - swap_point[0]) == 1
+#   answer_point = vertical_num + 1, swap_point[0] + 1
+# else
+#   answer_point = -1
+# end
+
+# puts answer_point
+
+
+
+
+# num_of_people = gets.chomp.to_i
+
+# initial_pair_arry = []
+# i = 0
+# while i < num_of_people
+#   initial_pair = gets.chomp.split(" ").map(&:to_i)
+#   initial_pair_arry.push(initial_pair)
+#   i += 1
+# end
+
+# num_of_match = 0
+# i = 0
+# # 名前のペアの数、ループ処理を実施
+# while i < num_of_people - 1
+#   j = 1
+#   while j < num_of_people - i
+#     if initial_pair_arry[i] == initial_pair_arry[i+j].reverse
+#       num_of_match += 1
+#       initial_pair_arry.delete_at(i+j)
+#       num_of_people -= 1
+#       break
+#     end
+#     j += 1
+#   end
+  
+#   i += 1
+# end
+
+# puts num_of_match
+
+
+# num_of_people
+#  = gets.chomp.to_i
+
+# name_arry = []
+# i = 0
+# while i < num_of_people
+#   イニシャル = gets.chomp.split(" ")
+#   name_arry.push(イニシャル)
+#   i += 1
+# end
+
+# match_num = 0
+# i = 0
+# while i < num_of_people
+#   if name_arry[i][0] == name_arry[i+1][1] && name_arry[i][1] == name_arry[i+1][0]
+#     match_num += 1
+#     num_of_people -= 1
+#   end
+#   i += 1
+# end
+
+# puts match_num
+
+# # 同じ位置だけ見比べる
+# arr1.zip(arr2).select{ |a, b| a[0..1] == b[0..1] }.map(&:first)
+
+# # 全部比較する
+# hash1 = arr1.group_by{ |arr| arr[0..1] }
+# hash2 = arr2.group_by{ |arr| arr[0..1] }
+# hash1.values_at(*hash1.keys & hash2.keys).flatten(1)
+
+
 # class Num2Eng
 #   # 数字と英語を結びつける
 #   NUM_ENG = {
@@ -89,35 +289,35 @@
 # hoge = Num2Eng.new
 # p hoge.get("100")
 
-rest_num = gets.chomp.to_i
+# rest_num = gets.chomp.to_i
 
-answer = ""
+# answer = ""
 
-billion_num = rest_num / 1000**3
-if billion_num >= 1
-  answer << 
-end
-rest_num = rest_num % 1000**3
+# billion_num = rest_num / 1000**3
+# if billion_num >= 1
+#   answer << 
+# end
+# rest_num = rest_num % 1000**3
 
-million_num = rest_num / 1000**2
-if million_num >= 1
-  answer << 
-end
-rest_num = rest_num % 1000**2
+# million_num = rest_num / 1000**2
+# if million_num >= 1
+#   answer << 
+# end
+# rest_num = rest_num % 1000**2
 
-thousand_num = est_num % 1000**1
-if thousand_num >= 1
+# thousand_num = est_num % 1000**1
+# if thousand_num >= 1
   
-  answer << 
-end
-rest_num = rest_num % 1000*1
+#   answer << 
+# end
+# rest_num = rest_num % 1000*1
 
-one_num = rest_num % 1
-if one_num >= 1
+# one_num = rest_num % 1
+# if one_num >= 1
   
-  answer << 
-end
-rest_num = rest_num % 1
+#   answer << 
+# end
+# rest_num = rest_num % 1
 
 
 

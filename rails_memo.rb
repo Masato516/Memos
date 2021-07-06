@@ -1818,6 +1818,9 @@ aws:
 credentials.yml.encはmaster keyを利用して暗号化・復号されるため、
 masterのみGithubに上げなければ良い！！
 
+# コンテナ内では、EDITOR="vim"の部分は環境変数の指定なので-eオプションを使用
+docker-compose run -e EDITOR="vi" web rails credentials:edit
+
 config/master.key
 cee513823adb2cda09b6c08b2b5508..
 /config/master.keyが共有できない環境ではmaster keyを環境変数：RAILS_MASTER_KEYで指定
