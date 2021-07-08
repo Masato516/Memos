@@ -453,3 +453,12 @@ select "all_order" ,count(*) as count from order_details
 union
 select b.id , count(a.item_id) count
 from order_details a right outer join items b on a.item_id = b.id  group by b.id;
+
+-- 合計体重が１０００以下になるようにデータを取得（列順）
+SELECT accumulated_tbl.name
+FROM (
+      SELECT name, SUM(weight) OVER(ORDER BY turn) accumulated_weight
+      FROM   line
+) AS accumulated_tbl
+WHERE accumulated_tbl.accumulated_weight <= 1000
+ORDER BY accumulated_weight desc limit 1
