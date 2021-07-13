@@ -2495,6 +2495,15 @@ Time::DATE_FORMATS[:stamp] = "%Y%m%d%H%M%S" # YYYYMMDDHHMMSS
 例.
 <%= search_form_for @q, url: search_users_path do |f| %>
 
+# @q
+検索結果(Ransack::Searchクラス)
+
+# resultメソッド
+ransackメソッドで取得したデータをActiveRecord_Relationのオブジェクトに変換するメソッド
+
+# @results
+最終的な検索結果(ActiveRecord_Relationクラス)
+
 # _contメソッド
 ransackで用意されている検索したワードが含まれているレコードを取得するためのメソッド
 入力されたワードで あいまい検索 される
@@ -2509,15 +2518,6 @@ ransackで用意されている検索したワードが含まれているレコ�
 
 # params[:q]
 検索のフォームから送られてくるパラメーター
-
-# @q
-検索結果(Ransack::Searchクラス)
-
-# resultメソッド
-ransackメソッドで取得したデータをActiveRecord_Relationのオブジェクトに変換するメソッド
-
-# @results
-最終的な検索結果(ActiveRecord_Relationクラス)
 
 # カラム名_or_カラム名_or_カラム名_メソッド
 1つの入力フォームで複数のカラムを検索する(_or_でカラム名を繋ぐ)
