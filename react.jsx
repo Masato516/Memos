@@ -30,10 +30,13 @@ javascript/packs/index.jsx 内の id='root'のdivタグを取得して、
 
 // 名前付きエクスポート
 // 記述１
-1: export { 変数名, 関数名, クラス名 };
+// 1: 
+export { 変数名, 関数名, クラス名 };
 // 記述２
-2: export 定義(変数名, 関数名, クラス名)
-例. export const value2 = 'value2';
+// 2: 
+export 定義(変数名, 関数名, クラス名)
+// 例. 
+export const value2 = 'value2';
 
 // デフォルトエクスポート
 // (1つのファイルに1回しか使えない)
