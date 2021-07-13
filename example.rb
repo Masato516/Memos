@@ -490,6 +490,96 @@
 # 残りの金額 = 残りの金額 % 100
 
 
+# # 文字列が数字だけで構成されていれば true を返す
+# def number?(str)
+#   # 文字列の先頭(\A)から末尾(\z)までが「0」から「9」の文字か
+#   nil != (str =~ /\A[0-9]+\z/)
+# end
+
+# p input_line = %w(8 3 3 * + 2 + 1 -)
+# stack = []
+
+# input_line.map{ |v|
+#   # begin
+#     if number?(v)
+#       p stack.push(v)
+#     elsif v == "+"
+#       result = stack.pop(2).map( &:to_i ).inject(:+)
+#       p stack.push(result)
+#     elsif v == "-"
+#       result = stack.pop(2).map( &:to_i ).inject(:-)
+#       p stack.push(result)
+#     elsif v == "*"
+#       result = stack.pop(2).map( &:to_i ).inject(:*)
+#       p stack.push(result)
+#     elsif v == "++"
+#       result = stack.pop(1)[0].to_i + 1
+#       p stack.push(result)
+#     elsif v == "@"
+#       result = 0
+#       stack.pop(3).map{|n|
+#         result = stack.map( &:to_i ).inject(:*)
+#       }
+#       p stack.push(result)
+#     end
+    
+#   # rescue
+#     # puts "invalid"
+#   # end
+# }
+
+
+
+# # 文字列が数字だけで構成されていれば true を返す
+# def number?(str)
+#   # 文字列の先頭(\A)から末尾(\z)までが「0」から「9」の文字か
+#   nil != (str =~ /\A[0-9]+\z/)
+# end
+
+# input_line = gets.chomp.split()
+
+# stack = []
+
+# begin
+#   input_line.map{ |v|
+#       if number?(v)
+#         stack.push(v)
+#       elsif v == "+"
+#         result = stack.pop(2).map( &:to_i ).inject(:+)
+#         stack.push(result)
+#       elsif v == "-"
+#         result = stack.pop(2).map( &:to_i ).inject(:-)
+#         stack.push(result)
+#       elsif v == "*"
+#         result = stack.pop(2).map( &:to_i ).inject(:*)
+#         stack.push(result)
+#       elsif v == "++"
+#         result = stack.pop(1)[0].to_i + 1
+#         stack.push(result)
+#       elsif v == "@"
+#         result = 0
+#         stack.pop(3).map{|n|
+#           result = stack.map( &:to_i ).inject(:*)
+#         }
+#         stack.push(result)
+#       end
+#   }
+#   puts stack.pop
+# rescue
+#   puts "invalid"
+# end
+
+arry = [1, -2, 3]
+
+result = 0
+arry.map do |n|
+  arry.unshift(1)
+  result += n * arry.inject(:+)
+end
+
+p result
+
+# p [1].inject(:+1)
 
 # def hoge(arg)
 #   arg
