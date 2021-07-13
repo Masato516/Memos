@@ -454,6 +454,7 @@ union
 select b.id , count(a.item_id) count
 from order_details a right outer join items b on a.item_id = b.id  group by b.id;
 
+-- TODO: 復習が必要！！！！
 -- 合計体重が１０００以下になるようにデータを取得（列順）
 SELECT accumulated_tbl.name
 FROM (
@@ -462,3 +463,8 @@ FROM (
 ) AS accumulated_tbl
 WHERE accumulated_tbl.accumulated_weight <= 1000
 ORDER BY accumulated_weight desc limit 1
+
+
+SELECT `interviews`.* 
+FROM `interviews` 
+WHERE `interviews`.`job_id` = 1 LIMIT 11
