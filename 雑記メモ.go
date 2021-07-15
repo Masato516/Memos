@@ -167,3 +167,183 @@ func main() {
 	fmt.Println(xi)
 }
 // no new variables on left side of :=
+
+
+const Pi = 3.14
+
+const (
+	Username = "test_user"
+	Password = "password"
+)
+
+func main() {
+	fmt.Println(Pi, Username, Password)
+}
+// 3.14 test_user password
+
+
+// 数値型
+func main() {
+	var (
+		u8  uint8     = 255
+		i8  int8      = 127
+		f32 float32   = 0.2
+		c64 complex64 = -5 + 12i
+	)
+	fmt.Println(u8, i8, f32, c64)
+	fmt.Printf("%T %v", u8, u8)
+}
+// 255 127 0.2 (-5+12i)
+// uint8 255
+
+
+func main() {
+	var (
+		u8  uint8     = 255
+		i8  int8      = 127
+		f32 float32   = 0.2
+		c64 complex64 = -5 + 12i
+	)
+	fmt.Println(u8, i8, f32, c64)
+	fmt.Printf("type=%T value=%v", u8, u8)
+}
+// 255 127 0.2 (-5+12i)
+// type=uint8 value=255
+// https://pkg.go.dev/fmt 参照
+
+
+func main() {
+	fmt.Println("1 + 1 =", 1+1)
+	fmt.Println("10 - 1 =", 10-1)
+	fmt.Println("10 / 2 =", 10/2)
+	fmt.Println("10 / 3 =", 10/3)
+	fmt.Println("10.0 / 3 =", 10.0/3)
+	fmt.Println("10 / 3.0 =", 10/3.0)
+	fmt.Println("10 % 2 =", 10%2)
+	fmt.Println("10 % 3 =", 10%3)
+}
+
+// 1 + 1 = 2
+// 10 - 1 = 9
+// 10 / 2 = 5
+// 10 / 3 = 3
+// 10.0 / 3 = 3.3333333333333335
+// 10 / 3.0 = 3.3333333333333335
+// 10 % 2 = 0
+// 10 % 3 = 1
+
+
+func main(
+	x := 0
+	fmt.Println(x)
+	// x = x + 1
+	x++
+	fmt.Println(x)
+	// x = x + 1
+	x--
+	fmt.Println(x)
+)
+// 0
+// 1
+// 0
+
+
+// シフト演算
+func main(
+	fmt.Println(1 << 0) // 0001 0001
+	fmt.Println(1 << 1) // 0001 0010
+	fmt.Println(1 << 2) // 0001 0100
+	fmt.Println(1 << 3) // 0001 1000
+)
+// 1
+// 2
+// 4
+// 8
+
+
+func main() {
+	fmt.Println("Hello, World!")
+	fmt.Println("Hello," + " World!")
+}
+// Hello, World!
+// Hello, World!
+
+
+func main() {
+	fmt.Println("Hello, World!"[0])
+}
+// 72   「H」ではなくASCIIコードか出力される
+
+
+func main() {
+	fmt.Println("Hello, World!"[0])
+}
+
+
+func main() {
+	fmt.Println(string("Hello, World!"[0]))
+}
+// 「H」が出力される
+
+
+func main() {
+	var s string = "Hello, World"
+	s[0] = "X"
+	fmt.Println(s)
+}
+// cannot assign to s[0] (strings are immutable)
+// 他の言語のように、配列っぽく扱えない！！
+
+
+// 文字列の文字を置き換えるには、strings.Replace を使う
+func main() {
+	var s string = "Hello, World"
+	fmt.Println(string("Hello, World!"[0]))
+	fmt.Println(strings.Replace(s, "H", "X", 1))
+}
+// H
+// Xello, World
+
+
+func main() {
+	var s string = "Hello, World"
+	fmt.Println(strings.Contains(s, "World"))
+}
+// true
+
+
+func main() {
+	fmt.Println("Test" +
+		"Test")
+}
+// TestTest
+
+
+func main() {
+	fmt.Println("Test\n" +
+		"Test")
+}
+// Test
+// Test
+
+
+
+// バッククォートで見た目通りに文字列を出力
+func main() {
+	fmt.Println(`Test1
+	                  Test2
+	Test3`)
+}
+// Test1
+// 	                  Test2
+// 	Test3
+
+
+func main() {
+	fmt.Println(`"`)
+	fmt.Println("\"")
+}
+// "
+// "
+
+
