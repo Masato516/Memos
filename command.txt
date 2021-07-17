@@ -174,11 +174,19 @@ Dockerは公式で3パターンの命名規則を定義しています
 
 1. ディレクトリを作成してviで Dockerfile へテキスト入力の開始
 2. Dockerfile の編集
-ubuntu というDocker Imageをもとに、ホストの hello.txt をコンテナの /tmp/hello.txt へコピーして、 cat /tmp/hello.txt コマンドを実行
+ubuntu というDocker Imageをもとに、
+ホストの hello.txt をコンテナの /tmp/hello.txt へコピーして、 
+cat /tmp/hello.txt コマンドを実行
+
+
 FROM ubuntu
+
 COPY hello.txt /tmp/hello.txt
+
 CMD ["cat", "/tmp/hello.txt"]
 -t hello オプションは「Docker Imageを hello という名前にする」という意味
+
+
 3. Docker Image のビルド&実行
 docker build コマンドで Dockerfile から Docker Image を作成
 docker build -t hello .
@@ -278,10 +286,57 @@ Docker内でコマンドを実行
 Docker起動時にデフォルトで実行されるコマンドを定義
 Dockerはここで設定したコマンドがフォアグラウンドで実行されている間が生存期間
 そのため、プロセスの処理が走っている間はフォアグラウンドで実行するように記述(バックグラウンドで起動するとDockerが終了する)
-例. CMD ["npm", "run", "start"]
 
-RUNと似ていて、ビルド時のDocker内で実行するプロセスを定義する
-RUNとCMDの違いは、RUNはアプリケーションの更新や配置を行い、CMDはアプリケーションそのものを動作させます。
+CMD の指定方式
+1. CMD["実行ファイル", "引数1", "引数2"] #（推奨方法）
+ex. CMD ["npm", "run", "start"]
+2. CMD コマンド 引数1 引数2             # シェル内で実行されるため、シェルの変数を引き継ぐなどの特徴あり
+3. CMD ["引数1", "引数2"]             # ENTRYPOINTに引数として渡す引数を指定
+
+
+* RUN vs CMD
+RUNと似ていて、ビルド時のDocker内で実行するプロセスを定義
+RUNとCMDの違いは、RUNはアプリケーションの更新や配置を行い、CMDはアプリケーションそのものを動作させる
+
+
+** CMD vs ENTRYPOINT
+コンテナ内で実行する PID 1 のプロセスを指定するもの
+言いかえると「このイメージは一体何をするのか、何のためのイメージなのか」という性質を決定づける命令
+
+* CMD: docker container run の指定で上書き可能
+例.
+(Dockerfile)
+CMD ping 127.0.0.1 -c 100
+
+$ docker run test cat /etc/lsb-release 
+ping ではなく、docker run 時につけた引数の cat /etc/lsb-release が実行
+
+
+* ENTRYPOINT: docker container run の指定では CMD と異なり、上書き不可
+例.
+(Dockerfile)
+ENTRYPOINT ping 127.0.0.1 -c 100
+$ docker run test cat /etc/lsb-release
+
+CMD とは違い、docker run 時につけた cat /etc/lsb-release ではなく、ENTRYPOINT の ping が実行
+$ docker run --entrypoint="" で上書きはすることは可能
+
+
+** ["command"] (Exec形式) vs command (Shell形式)
+
+* CMD ["command"], ENTRYPOINT ["command"]
+シェルを介さずに実行
+例.
+CMD ["ping","127.0.0.1","-c","100"]
+#=> ping 127.0.0.1 -c 100
+
+* CMD command, ENTRYPOINT command
+/bin/sh -c の引数としてコマンドが実行
+例.
+CMD ping 127.0.0.1 -c 100
+#=> /bin/sh -c ping 127.0.0.1 -c 100
+
+
 
 * EXPOSE
 コンテナ起動時に公開することを想定されているポートを記述
