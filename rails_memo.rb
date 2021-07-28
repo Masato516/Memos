@@ -1,3 +1,52 @@
+### Rubocop
+## 1. インストール
+#  Gemfile
+gem 'rubocop', require: false
+$ bundle install
+
+## 2. RuboCopの設定ファイルを生成
+# 「.rubocop_todo.yml」と「.rubocop.yml」という2つのファイルを生成するだけでなく、
+# 現在出ている警告を一時退避させることができる
+.rubocop.yml      #「守るべきルール」
+.rubocop_todo.yml # 「今後直すべき違反」
+$ rubocop --auto-gen-config
+
+# 「.rubocop_todo.yml」内の記述から
+# 修正したい警告をコメントアウト
+# 例. Gemfile の警告の一時退避を削除
+# Bundler/DuplicatedGem:
+#   Exclude:
+#     - 'Gemfile'
+
+## 3. 修正内容を確認
+$ bundle exec rubocop
+
+## 4. コードが修正されたか確認
+$ bundle exec rubocop
+
+## 5.「.rubocop_todo.yml」に戻りコメントアウトした警告を削除
+
+
+## 自動修正
+# safeとマークされているCopのみを自動修正
+$ rubocop -a
+# unsafe(挙動が変わってしまう可能性)のCopも含めた全てのCopを自動修正
+$ rubocop -A
+
+## 差異を確認
+git diff
+## 差異を戻す
+git reset
+
+# .: clean file
+# c: convention
+# w: warning
+# e: error
+# f: fatal
+
+
+
+
 ----------Trix-------------
 gem 'trix-rails', require: 'trix'
 
@@ -2218,6 +2267,18 @@ letは「before処理でテストケーススコープの変数に値を代入�
 let(:user_a) { FactocyBot.create(:user, name: 'ユーザーA' ,email: 'a@example.com') }
 ->let(:login_user) { user_a } のようにユーザーAでログインするcontextでは
 　letでlogin_userにユーザーAを入れられる
+
+
+## マッチャ
+# eq
+(RSpec で等値のエクスペクテーションを書くときは == ではなく eq を使う)
+
+# be_valid
+
+# include
+
+# be_empty
+
 
 ------------let--------------
 ## letが呼び出されるバージョン
