@@ -1141,6 +1141,10 @@ git stash
 # untracked fileも含めて変更差分を退避()
  git stash -u
 
+# メッセージを入れて一時退避
+git stash "メッセージ"  # saveがなくても良い
+git stash save "メッセージ"
+
 # 一時退避を元にもどす
 git stash pop # 最新のスタッシュを適用し、削除 
 git stash pop stash@{N} # N番目のスタッシュを適用し、削除
