@@ -1094,25 +1094,81 @@ ORMマッピング(非互換的なデータを変換するプログラミング�
 ActiveRecord::Baseが提供する基底クラスを継承しているクラスをモデルクラスorモデルと呼ぶ
 そのインスタンスをモデルオブジェクトと呼ぶ
 
-・joins
-デメリット
-N+1問題が起きる
-原因は、joinsメソッドが関連性を保持せず、ただ抽出するだけだから
-抽出した結果を持っているだけですので、表示するためのデータを取得するために、データベースへアクセスする必要がある
-メリット
+### countとlengthとsizeの違い
+ActiveRecordでのレコード数のカウント方法
+メソッド	内容	                          キャッシュ
+count	  SQLのCOUNTを使ってカウントします	  使わない
+length	SQLの実行結果の行数をカウントします	 あれば使う
+size	  SQLのCOUNTを使ってカウントします	  あれば使う
+
+## Eager loadingとは (preload, eager_load, includesなど)
+予めメモリ上にActive Recordで情報を保持する方法
+これによって、素早いレンダリングが可能になる
+しかし、アソシエーションしているテーブルにある情報が膨大な場合、
+大量のメモリを消費する
+
+## Lazy loadingとは (joinsなど)
+Railsに限らず、Lazy loadingは遅延読み込みなどと言われたりしている
+これは、JOINしたテーブルの情報が必要になった時に SQLを発行する
+メモリを確保する量は少なくて済むが、
+JOINするテーブルを参照するたびSQLを発行するため
+Webサイト表示パフォーマンスを悪くする場合がある（N+1問題）
+
+
+### joins
+## ユースケース
+# メモリの使用量を必要最低限に抑えたい場合
+# JOINした先のデータを参照せず、絞り込み結果だけが必要な場合
+# 逆に言うと、引用先のデータを参照しない場合、使用しないほうが良い
+
+# mergeを使うと結合先のモデルのscopeを使うことができる
+
+## joins（selectなし）
+# actressesのカラムしか持ってこない
+# 結合先の情報が不要な場合はこれで良い
+Model.joins(:sub_models)   # 子モデルは複数形でないといけない
+SubModel.joins(:model)
+
+## joins（selectあり）
+# 結合先（この場合はmovies）のカラムも取得できる
+# 子モデルは複数形でないといけない joins(:sub_models)
+Model.joins(:sub_models).select("models.*, sub_models.*")  # selectメソッド内はテーブル名を指定するので複数形！！！
+SubModel.joins(:model).select("sub_models.*, models.*")
+
+## 複数個selectしてcountをするとSQLが壊れる・・・。注意！
+Model.joins(:sub_models).select("models.*, sub_models.*").count
+#=> SELECT COUNT(jobs.*, access_reports.*) FROM ...    #=> エラー発生
+
+## sizeやlengthを使うと良い
+# size
+Model.joins(:sub_models).select("models.*, sub_models.*").size
+#=> SELECT jobs.*, access_reports.* FROM ...    #=> SQLの実行結果の行数をカウントする (COUNT関数を使わない！)
+# length
+Model.joins(:sub_models).select("models.*, sub_models.*").length
+#=> SELECT COUNT(models.*, sub_models.*) FROM ...
+
+・メリット
 「テーブルを結合して絞り込める」
 そのため、一般的にjoinsメソッドはwhereメソッドと組み合わせて使うことが多い
 デメリットで説明したように、関連性を保持しないため、余計なメモリを消費せず、
 関連するテーブルの数が多くなればとても効果的に働く
 
-・includes
+・デメリット
+N+1問題が起きる
+原因は、joinsメソッドが関連性を保持せず、ただ抽出するだけだから
+抽出した結果を持っているだけですので、表示するためのデータを取得するために、データベースへアクセスする必要がある
+
+
+### includes
 関連するオブジェクトを一度に取得
 @event.tickets.includes(:user)
 includes(:user)を使わないと@ticketsの要素の数だけSQLクエリが発行される(N+1問題)
 必要に応じて生成したテーブルを保持しますので、
-eager_loadメソッドとpreloadメソッドの良いとこどりをしたようなメソッドと言える
+eager_loadメソッドとpreloadメソッドを
+アソシエーション先のデータ参照（WHEREなどを）しているかどうかで使い分けている
 
-・preload
+
+### preload
 eager_loadとほぼ同じように、データベースへのアクセス回数を減らせる
 1回のアクセスで済むeager_loadメソッドよりは速度の面で劣りますが、
 生成したテーブルを保持しませんので、メモリ消費は抑えられる
@@ -1124,9 +1180,17 @@ def index
 end
 生成されるクエリ
 Item Load (1.0ms)  SELECT "items".* FROM "items"
-Saler Load (0.0ms)  SELECT "salers".* FROM "salers" WHERE "salers"."id" IN (?, ?, ?, ?, ?)  [["id", 3], ["id", 2], ["id", 4], ["id", 1], ["id", 5]]
+Saler Load (0.0ms)  SELECT "salers".* FROM "salers" WHERE "salers"."id" IN (?, ?, ?, ?, ?)  [["id", 1], ["id", 2], ["id", 3], ["id", 4], ["id", 5]]
 
-・eager_load
+# ユースケース
+N対Nのアソシエーションの場合はpreload (1対Nでもpreloadが基本線？byマネフォブログ)
+データ量が増えるほど、eager_loadよりも、preloadの方がSQLを分割して取得するため、
+レスポンスタイムは早くなるので、preloadをオススメします。
+できないこと ： アソシエーション先のデータ参照（Whereによる絞り込みなど）
+注意 ： データ量が大きいと、IN句が大きくなりがちで、メモリを圧迫する可能性がある
+
+
+### eager_load
 データベースへのアクセスが1回だけ
 （むしろ遅く感じる場合もあります）かもしれませんが、この処理回数の違いは、
 データの数が大きくなると大きな違いになってくる
@@ -1141,19 +1205,31 @@ end
 生成されるクエリ
 SQL (0.0ms)  SELECT "items"."id" AS t0_r0, "items"."saler_id" AS t0_r1, "items"."title" AS t0_r2, "items"."price" AS t0_r3, "items"."created_at" AS t0_r4, "items"."updated_at" AS t0_r5, "salers"."id" AS t1_r0, "salers"."name" AS t1_r1, "salers"."created_at" AS t1_r2, "salers"."updated_at" AS t1_r3 FROM "items" LEFT OUTER JOIN "salers" ON "salers"."id" = "items"."saler_id"
 
-・何もなし
-  Board Load (1.2ms)  SELECT  `boards`.* FROM `boards` LIMIT 10 OFFSET 0
-  CampusName Load (1.3ms)  SELECT  `campus_names`.* FROM `campus_names` WHERE `campus_names`.`id` = 1 LIMIT 1
-  User Load (1.8ms)  SELECT  `users`.* FROM `users` WHERE `users`.`deleted_at` = '0000-01-01 00:00:00' AND `users`.`id` = 23 ORDER BY `users`.`id` ASC LIMIT 1
-  CACHE CampusName Load (0.0ms)  SELECT  `campus_names`.* FROM `campus_names` WHERE `campus_names`.`id` = 1 LIMIT 1  [["id", 1], ["LIMIT", 1]]
-  CACHE CampusName Load (0.1ms)  SELECT  `campus_names`.* FROM `campus_names` WHERE `campus_names`.`id` = 1 LIMIT 1  [["id", 1], ["LIMIT", 1]]
-  CACHE CampusName Load (0.0ms)  SELECT  `campus_names`.* FROM `campus_names` WHERE `campus_names`.`id` = 1 LIMIT 1  [["id", 1], ["LIMIT", 1]]
-  CACHE CampusName Load (0.1ms)  SELECT  `campus_names`.* FROM `campus_names` WHERE `campus_names`.`id` = 1 LIMIT 1  [["id", 1], ["LIMIT", 1]]
-  CACHE CampusName Load (0.0ms)  SELECT  `campus_names`.* FROM `campus_names` WHERE `campus_names`.`id` = 1 LIMIT 1  [["id", 1], ["LIMIT", 1]]
-  CACHE CampusName Load (0.0ms)  SELECT  `campus_names`.* FROM `campus_names` WHERE `campus_names`.`id` = 1 LIMIT 1  [["id", 1], ["LIMIT", 1]]
-  CACHE CampusName Load (5.9ms)  SELECT  `campus_names`.* FROM `campus_names` WHERE `campus_names`.`id` = 1 LIMIT 1  [["id", 1], ["LIMIT", 1]]
-  CACHE CampusName Load (0.1ms)  SELECT  `campus_names`.* FROM `campus_names` WHERE `campus_names`.`id` = 1 LIMIT 1  [["id", 1], ["LIMIT", 1]]
-  CACHE CampusName Load (0.0ms)  SELECT  `campus_names`.* FROM `campus_names` WHERE `campus_names`.`id` = 1 LIMIT 1  [["id", 1], ["LIMIT", 1]]
+・何もない時
+Board Load (1.2ms)  SELECT  `boards`.* FROM `boards` LIMIT 10 OFFSET 0
+CampusName Load (1.3ms)  SELECT  `campus_names`.* FROM `campus_names` WHERE `campus_names`.`id` = 1 LIMIT 1
+User Load (1.8ms)  SELECT  `users`.* FROM `users` WHERE `users`.`deleted_at` = '0000-01-01 00:00:00' AND `users`.`id` = 23 ORDER BY `users`.`id` ASC LIMIT 1
+CACHE CampusName Load (0.0ms)  SELECT  `campus_names`.* FROM `campus_names` WHERE `campus_names`.`id` = 1 LIMIT 1  [["id", 1], ["LIMIT", 1]]
+CACHE CampusName Load (0.1ms)  SELECT  `campus_names`.* FROM `campus_names` WHERE `campus_names`.`id` = 1 LIMIT 1  [["id", 1], ["LIMIT", 1]]
+CACHE CampusName Load (0.0ms)  SELECT  `campus_names`.* FROM `campus_names` WHERE `campus_names`.`id` = 1 LIMIT 1  [["id", 1], ["LIMIT", 1]]
+CACHE CampusName Load (0.1ms)  SELECT  `campus_names`.* FROM `campus_names` WHERE `campus_names`.`id` = 1 LIMIT 1  [["id", 1], ["LIMIT", 1]]
+CACHE CampusName Load (0.0ms)  SELECT  `campus_names`.* FROM `campus_names` WHERE `campus_names`.`id` = 1 LIMIT 1  [["id", 1], ["LIMIT", 1]]
+CACHE CampusName Load (0.0ms)  SELECT  `campus_names`.* FROM `campus_names` WHERE `campus_names`.`id` = 1 LIMIT 1  [["id", 1], ["LIMIT", 1]]
+CACHE CampusName Load (5.9ms)  SELECT  `campus_names`.* FROM `campus_names` WHERE `campus_names`.`id` = 1 LIMIT 1  [["id", 1], ["LIMIT", 1]]
+CACHE CampusName Load (0.1ms)  SELECT  `campus_names`.* FROM `campus_names` WHERE `campus_names`.`id` = 1 LIMIT 1  [["id", 1], ["LIMIT", 1]]
+CACHE CampusName Load (0.0ms)  SELECT  `campus_names`.* FROM `campus_names` WHERE `campus_names`.`id` = 1 LIMIT 1  [["id", 1], ["LIMIT", 1]]
+
+# ユースケース
+1対1あるいはN対1のアソシエーションをJOINする場合（belongs_to, has_one アソシエーション）
+JOINした先のテーブルの情報を参照したい場合（Whereによる絞り込みなど）
+--------------生の SQL を利用--------------
+## find_by_sql
+# Modelインスタンスの一覧を配列として返す
+(Modelにある属性値しか返さない)
+Model.find_by_sql('SQL文')
+
+
+
 ------------バリデーション(ActiveRecord)-------------
 Active Recordを使って、モデルがデータベースに書き込まれる前にモデルの状態をバリデーション（検証: validation）できる。
 Active Recordにはモデルチェック用のさまざまなメソッドが用意されている。
