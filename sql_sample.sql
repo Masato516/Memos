@@ -68,6 +68,16 @@ INSERT INTO items(id,name,price,created_at,updated_at)
                   (3,'マフラー',1200,now(),now()),
                   (4,'ブルゾン',1800,now(),now());
 
+-- 問題の後半(step2部分)のデータ
+INSERT INTO items(id,name,price,created_at,updated_at) 
+            VALUES(1,'シャツ',1000,now(),now()),
+                  (2,'パンツ',950,now(),now()),
+                  (3,'マフラー',1200,now(),now()),
+                  (4,'ブルゾン',1800,now(),now()),
+                  (5,'タンクトップ',1300,now(),now()),
+                  (6,'ジャンパー',2500,now(),now()),
+                  (7,'ソックス',600,now(),now());
+
 INSERT INTO orders(id,order_date,customer_id,created_at,updated_at) 
             VALUES(1 , '2013-10-01',1,now(),now()),
                   (2 , '2013-10-01',2,now(),now()),
@@ -409,6 +419,16 @@ GROUP BY e.name;
 --        WHERE	 部門 = 'A1'
 -- )
 
+Q9
+-- LEFT OUTER JOIN バージョン
+SELECT i.id, i.name
+FROM   items i
+LEFT OUTER JOIN order_details od 
+  ON i.id = od.item_id
+    WHERE od.order_id IS NULL;  -- NULLとの比較では「=」演算子は使えず、IS NULL演算子を使わないといけない
+
+## ここからsql trainingの再開
+
 
 SELECT u.name user_name, e.name exam_name, c.name class_name, s.score
 FROM users
@@ -468,3 +488,26 @@ ORDER BY accumulated_weight desc limit 1
 SELECT `interviews`.* 
 FROM `interviews` 
 WHERE `interviews`.`job_id` = 1 LIMIT 11
+
+
+SELECT ar.page_view
+FROM   access_reports ar
+  LEFT JOIN jobs j
+    ON ar.job_id = j.id
+  LEFT JOIN companies c
+    ON j.company_id = c.id
+  WHERE c.id = 1
+
+SELECT ar.page_view FROM access_reports ar LEFT JOIN jobs j ON ar.type_id = j.id LEFT JOIN companies c ON j.company_id = c.id WHERE c.id = 1
+
+
+SELECT i.*
+FROM   items i
+LEFT JOIN order_details od 
+  ON i.id = od.item_id
+
+
+SELECT i.*
+FROM   order_details od
+LEFT JOIN items i
+  ON od.item_id = i.id
