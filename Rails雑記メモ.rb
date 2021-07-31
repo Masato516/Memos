@@ -26,3 +26,7 @@ job.access_reports.sum(:page_view)
 @jobs.each do |job|
   job.page_view = 1
 end
+
+@job_page_view.fetch_values(116).present? ? @job_page_view.fetch_values(116)[0] : 0
+
+<%= @job_page_view.has_key?(job.id) ? @job_page_view.fetch_values(job.id).first : 0 %>
