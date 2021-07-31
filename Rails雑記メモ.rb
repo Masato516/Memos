@@ -29,4 +29,10 @@ end
 
 @job_page_view.fetch_values(116).present? ? @job_page_view.fetch_values(116)[0] : 0
 
-<%= @job_page_view.has_key?(job.id) ? @job_page_view.fetch_values(job.id).first : 0 %>
+@job_page_view.has_key?(job.id) ? @job_page_view.fetch_values(job.id).first : 0
+
+@job_page_views.has_key?(job.id) ? @job_page_views[job.id] : 0
+
+JobAccessReport.where(job_id: current_company.jobs).group(:job_id).sum(:page_view)
+
+JobAccessReport.where(job_id: 1..2).sum(:page_view)
