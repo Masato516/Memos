@@ -2355,7 +2355,10 @@ let(:user_a) { FactocyBot.create(:user, name: 'ユーザーA' ,email: 'a@example
 
 # be_empty
 
-
+# be_late
+RSpec に定義されているマッチャではない
+RSpec は賢いので、モデル に late または late? という名前の属性やメソッドが存在し、
+それが真偽値を返すようになっていれば be_late はメソッドや属性の戻り値が true になっていることを 検証してくれる
 ------------let--------------
 ## letが呼び出されるバージョン
 let(:user_a) { FactoryBot.create(:user, name: 'ユーザーA', email: 'a@example.com') }
@@ -2484,6 +2487,172 @@ FixtureはYAML形式でテーブルレコードに対応するデータ内容を
 Fixtureがテスト時の"データベースの断面"を記述するような感覚であるのに対して、
 FactoryBotは"モデルオプジェクトの作り方"を宣言的に記述する感じ
 
+Rails はフィクスチャのデータをデータベースに読み込む際に Active Record を使わない
+#=> モデルのバリデーションの ような重要な機能が無視される
+#=> もし同じデータを Web フォームやコン ソールから作ろうとすると、失敗することもあるわけです。
+
+
+Factory Bot は他のモデル と関連を持つモデルを扱うのにとても便利
+
+
+Factory Bot では シーケンス を使ってこのようなユニークバリデーションを持つフィールドを扱うことができる
+シーケンスはファクトリから新しいオブジェクトを作成するたびに、
+カウンタの値を1つずつ 増やしながら、ユニークにならなければいけない属性に値を設定する
+
+例.
+factory :user do
+  family_name      { "八木" }
+  given_name       { "雅斗" }
+  family_name_kana { "ヤギ" }
+  given_name_kana  { "マサト" }
+  faculty_id       { 1 }
+  email            { |n| "sample#{n}@example.ritsumei.ac.jp" }
+  password         { "password1" }
+end
+
+### 副作用(関連するモデルが勝手に作成される)
+
+例.
+# spec/factories/notes.rb
+FactoryBot.define do
+  factory :note do
+    message "My important note."
+    association :project
+    association :user
+  end 
+end
+
+# spec/factories/projects.rb
+FactoryBot.define do
+  factory :project do
+    sequence(:name) { |n| "Project #{n}" } description "A test project."
+    due_on          1.week.from_now
+    association     :owner
+  end 
+end
+
+# spec/factories/users.rb
+FactoryBot.define do
+  factory :user, aliases: [:owner] do
+    first_name "Aaron"
+    last_name "Sumner"
+    sequence(:email) { |n| "tester#{n}@example.com" }
+    password "dottle-nouveau-pavilion-tights-furze"
+  end 
+end
+
+# ファクトリで関連するデータを生成する
+it "generates associated data from a factory" do
+  note = FactoryBot.create(:note)
+  puts "This note's project is #{note.project.inspect}"  # User(プロジェクトに関連する owner)が作成される
+  puts "This note's user is #{note.user.inspect}"        # User(メモに関連するユーザー)が作成される
+end
+#=> Factory Bot を1回しか呼んでいないにもかかわらず、テストの実行結果を見ると必要なデータが全部作成されている
+
+## 以下のように変更するとデフォルトでユーザーが１人しか作成されなくなる
+# spec/factories/notes.rb
+FactoryBot.define do
+  factory :note do
+    message "My important note." association :project
+    user { project.owner }
+  end 
+end
+
+## エイリアス
+# 同じカウンター(n)のデータを共有できる
+Sequences can also have aliases. 
+The sequence aliases share the same counter
+
+使うときは、ユーザーファクトリに対して owner という名前で参照される場合 があると伝える必要あり
+belongs_to :owner, class_name: User, foreign_key: :user_id
+
+
+
+### 重複をなくす
+
+# 継承＆traitなしバージョン
+factory :board do
+  sequence(:title)          { |n| "Title #{n}" }
+  abstract                  { "要約" }
+  laboratory                { "○○研究室" }
+  start_day                 { "2021-08-23" }
+  finish_day                { "2021-08-28" }
+  sequence(:place)          { |n| "インテグ#{n}階" }
+  reward_present            { true }
+  reward_content            { "３０００円" }
+  required_number           { 10 }
+  sequence(:contact_detail) { |n| "sample#{n}@example.ritsumei.ac.jp" }
+  due_on                    { "2021-10-01" }
+  campus_name_id            { 1 }
+  user                      { create :owner }
+end
+
+factory :board_due_today, class: Board do
+  sequence(:title)          { |n| "Title #{n}" }
+  abstract                  { "要約" }
+  laboratory                { "○○研究室" }
+  start_day                 { Date.tomorrow }
+  finish_day                { Date.tomorrow }
+  due_on                    { Date.today }
+  sequence(:place)          { |n| "インテグ#{n}階" }
+  reward_present            { true }
+  reward_content            { "３０００円" }
+  required_number           { 10 }
+  sequence(:contact_detail) { |n| "sample#{n}@example.ritsumei.ac.jp" }
+  campus_name_id            { 1 }
+  user                      { create :owner }
+end
+
+## 継承バージョン
+factory :board do
+  sequence(:title)          { |n| "Title #{n}" }
+  abstract                  { "要約" }
+  laboratory                { "○○研究室" }
+  start_day                 { "2021-08-23" }
+  finish_day                { "2021-08-28" }
+  sequence(:place)          { |n| "インテグ#{n}階" }
+  reward_present            { true }
+  reward_content            { "３０００円" }
+  required_number           { 10 }
+  sequence(:contact_detail) { |n| "sample#{n}@example.ritsumei.ac.jp" }
+  due_on                    { "2021-10-01" }
+  campus_name_id            { 1 }
+  user                      { create :owner }
+
+  factory :board_due_today do
+    due_on                    { Date.today }
+  end
+end
+
+board = FactoryBot.create(:board_due_yesterday) # 利用方法
+
+
+## traitバージョン
+factory :board do
+  sequence(:title)          { |n| "Title #{n}" }
+  abstract                  { "要約" }
+  laboratory                { "○○研究室" }
+  start_day                 { "2021-08-23" }
+  finish_day                { "2021-08-28" }
+  sequence(:place)          { |n| "インテグ#{n}階" }
+  reward_present            { true }
+  reward_content            { "３０００円" }
+  required_number           { 10 }
+  sequence(:contact_detail) { |n| "sample#{n}@example.ritsumei.ac.jp" }
+  due_on                    { "2021-10-01" }
+  campus_name_id            { 1 }
+  user                      { create :owner }
+
+  trait :today do
+    due_on                    { Date.today }
+  end
+end
+
+board = FactoryBot.create(:board, :today) # 利用方法
+
+
+# モデルのファクトリの作成コマンド
+bin/rails g factory_bot:model モデル名
 -------------Selenium-------------
 Webブラウザの操作を自動化し、テストするためのフレームワーク
 ブラウザ操作からテストスクリプトを作成でき、Webベース管理タスクの自動化も行える
