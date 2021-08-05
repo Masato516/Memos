@@ -2401,6 +2401,10 @@ expect {
 }.to raise_error(ActiveRecord::RecordNotFound)
 
 
+それが真偽値を返すようになっていれば be_late はメソッドや属性の戻り値が true になっていることを 検証してくれる
+
+## コマンド
+$ bin/rails g rspec:controller コントローラー名
 ------------let--------------
 ## letが呼び出されるバージョン
 let(:user_a) { FactoryBot.create(:user, name: 'ユーザーA', email: 'a@example.com') }
