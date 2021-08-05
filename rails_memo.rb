@@ -2359,6 +2359,9 @@ let(:user_a) { FactocyBot.create(:user, name: 'ユーザーA' ,email: 'a@example
 RSpec に定義されているマッチャではない
 RSpec は賢いので、モデル に late または late? という名前の属性やメソッドが存在し、
 それが真偽値を返すようになっていれば be_late はメソッドや属性の戻り値が true になっていることを 検証してくれる
+
+## コマンド
+$ bin/rails g rspec:controller コントローラー名
 ------------let--------------
 ## letが呼び出されるバージョン
 let(:user_a) { FactoryBot.create(:user, name: 'ユーザーA', email: 'a@example.com') }
