@@ -2358,7 +2358,49 @@ let(:user_a) { FactocyBot.create(:user, name: 'ユーザーA' ,email: 'a@example
 # be_late
 RSpec に定義されているマッチャではない
 RSpec は賢いので、モデル に late または late? という名前の属性やメソッドが存在し、
-それが真偽値を返すようになっていれば be_late はメソッドや属性の戻り値が true になっていることを 検証してくれる
+それが真偽値を返すようになっていれば
+be_late はメソッドや属性の戻り値が true になっていることを 検証してくれる
+
+
+### controllerテスト(soft deprecated)
+# responce
+ブラウザに返すべきアプリケーションの全データを保持しているオブジェクト
+# be_success
+レスポンスステータスが成功(200)かそれ以外(ex. 500)であるかをチェック
+
+describe "GET /index" do
+  it "responds successfully" do
+    get :index
+    expect(response).to be_success 
+  end    
+end
+
+## 認証が必要なcontroller spec
+# コントローラスペックで Devise のテストヘルパーを使用する
+(rspec/ails_helper.rb)
+config.include Devise::Test::ControllerHelpers, type: :controller
+
+before do
+  @user = FactoryBot.create(:user)
+end
+
+it "responds successfully" do
+  sign_in @user
+  get :index
+  expect(response).to be_success 
+end
+
+# マッチャ
+expect(response).to have_http_status "302"
+
+expect(response).to redirect_to "/users/sign_in"
+
+ActiveRecordに値を渡す時は、{ }ブロックで渡すこと
+expect {
+  get :edit, params: { id: @board.id }
+}.to raise_error(ActiveRecord::RecordNotFound)
+
+
 ------------let--------------
 ## letが呼び出されるバージョン
 let(:user_a) { FactoryBot.create(:user, name: 'ユーザーA', email: 'a@example.com') }
@@ -2650,6 +2692,9 @@ end
 
 board = FactoryBot.create(:board, :today) # 利用方法
 
+
+# Boardファクトリからテスト用の属性値をハッシュとして作成
+FactoryBot.attributes_for(:board)
 
 ### コールバック
 ファクトリがオブジェクトをcreate、build、stub する前後に
