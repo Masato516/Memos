@@ -36,3 +36,59 @@ end
 JobAccessReport.where(job_id: current_company.jobs).group(:job_id).sum(:page_view)
 
 JobAccessReport.where(job_id: 1..2).sum(:page_view)
+
+
+
+
+
+context "when contact_detail_value has half-width white-space" do
+  it "deletes half-width white-space at the begin and end of contact_detail before_validation" do
+    @board.contact_detail = " 連絡先：sample@example.ritsumei.ac.jp "  # 前後に半角のスペースがある
+    @board.valid?
+    expect(@board.contact_detail).to eq "連絡先：sample@example.ritsumei.ac.jp"
+  end
+
+  it "deletes half-width white-space at the begin of contact_detail before_validation" do
+    @board.contact_detail = " 連絡先：sample@example.ritsumei.ac.jp"  # 前に半角のスペースがある
+    @board.valid?
+    expect(@board.contact_detail).to eq "連絡先：sample@example.ritsumei.ac.jp"
+  end
+
+  it "deletes half-width white-space at the end of contact_detail before_validation" do
+    @board.contact_detail = "連絡先：sample@example.ritsumei.ac.jp "  # 後に半角のスペースがある
+    @board.valid?
+    expect(@board.contact_detail).to eq "連絡先：sample@example.ritsumei.ac.jp"
+  end
+
+  it "does not delete half-width white-space in contact_detail before_validation" do
+    @board.contact_detail = "連絡先 sample@example.ritsumei.ac.jp"  # 中に半角のスペースがある
+    @board.valid?
+    expect(@board.contact_detail).to eq "連絡先 sample@example.ritsumei.ac.jp"
+  end
+end
+
+context "when contact_detail_value has full-width white-space" do
+  it "deletes full-width white-space at the begin and end of contact_detail before_validation" do
+    @board.contact_detail = "　連絡先：sample@example.ritsumei.ac.jp　"  # 前後に全角のスペースがある
+    @board.valid?
+    expect(@board.contact_detail).to eq "連絡先：sample@example.ritsumei.ac.jp"
+  end
+
+  it "deletes full-width white-space at the begin of contact_detail before_validation" do
+    @board.contact_detail = "　連絡先：sample@example.ritsumei.ac.jp"  # 前に全角のスペースがある
+    @board.valid?
+    expect(@board.contact_detail).to eq "連絡先：sample@example.ritsumei.ac.jp"
+  end
+
+  it "deletes full-width white-space at the end of contact_detail before_validation" do
+    @board.contact_detail = "連絡先：sample@example.ritsumei.ac.jp　"  # 後に全角のスペースがある
+    @board.valid?
+    expect(@board.contact_detail).to eq "連絡先：sample@example.ritsumei.ac.jp"
+  end
+
+  it "does not delete full-width white-space in contact_detail before_validation" do
+    @board.contact_detail = "連絡先　sample@example.ritsumei.ac.jp"  # 中に全角のスペースがある
+    @board.valid?
+    expect(@board.contact_detail).to eq "連絡先　sample@example.ritsumei.ac.jp"
+  end
+end
