@@ -109,3 +109,10 @@ def show
                                 .group(:reported_on)
                                 .sum(:unique_user_count)
 end
+
+def generate_uuid_token
+  self.id = loop do
+    random_token = SecureRandom.urlsafe_base64(nil, false)
+    break random_token unless self.class.exists?(id: random_token)
+  end
+end
