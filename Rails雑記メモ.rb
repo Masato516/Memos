@@ -116,3 +116,26 @@ def generate_uuid_token
     break random_token unless self.class.exists?(id: random_token)
   end
 end
+
+
+
+def self.configure
+  yield configuration if block_given?
+end
+
+def self.configuration
+  @configuration ||= RSpec::Core::Configuration.new
+end
+
+%w[
+  version
+  warnings
+
+  set
+  flat_map
+  filter_manager
+  dsl
+  notifications
+  reporter
+  ....
+].each { |name| RSpec::Support.require_rspec_core name }

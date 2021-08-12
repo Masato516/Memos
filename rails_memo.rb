@@ -2521,6 +2521,88 @@ el.find(:xpath, 'ancestor::dl')
 attach_file('data-file', 'path/to/file.csv')
 find('form input[type="file"]').set('path/to/file.csv')
 
+
+
+## click_button
+click_button を使うと、起動されたアクションが完了する前に次の処理へ移ってしまうことがある
+そこで、click_button を実行した expect{} の内部で最低でも1個以上のエクスペクテーションを実行し、
+処理の完了を待つようにするのが良い
+例.
+〜〜〜〜
+fill_in '連絡先(LINEのIDやメールアドレスなど)', with: '0909548****'
+click_button '投稿'
+
+expect(page).to have_content '募集要項を作成しました'  <- これ
+〜〜〜〜
+
+
+例.
+# 全種類の HTML 要素を扱う
+scenario "works with all kinds of HTML elements" do
+  # ページを開く
+  visit "/fake/page"
+  # リンクまたはボタンのラベルをクリックする
+  click_on "A link or button label"
+  # チェックボックスのラベルをチェックする
+  check "A checkbox label"
+  # チェックボックスのラベルのチェックを外す
+  uncheck "A checkbox label"
+  # ラジオボタンのラベルを選択する
+  choose "A radio button label"
+  # セレクトメニューからオプションを選択する
+  select "An option", from: "A select menu"
+  # ファイルアップロードのラベルでファイルを添付する
+  attach_file "A file upload label", "/some/file/in/my/test/suite.gif"
+
+  # 指定した CSS に一致する要素が存在することを検証する
+  expect(page).to have_css "h2#subheading"
+  # 指定したセレクタに一致する要素が存在することを検証する
+  expect(page).to have_selector "ul li"
+  # 現在のパスが指定されたパスであることを検証する
+  expect(page).to have_current_path "/projects/new"
+end
+
+
+## within
+# セレクタの スコープ を制限できる
+# Capybara にあいまいだ (ambiguous)と怒られたら、
+# within ブロックで要素を内包し、あいまいさをなくす
+<div id="node">
+  <a href="http://nodejs.org">click here!</a>
+</div>
+<div id="rails">
+  <a href="http://rubyonrails.org">click here!</a>
+</div>
+# ↓選択方法
+within "#rails" do
+  click_link "click here!"
+end
+
+
+## find
+# 値を指定して特定の要素を取 り出す
+language = find_field("Programming language").value
+expect(language).to eq "Ruby"
+
+find("#fine_print").find("#disclaimer").click
+find_button("Publish").click
+
+
+## save_and_open_page
+## save_screenshot
+# デバッグ用のメソッド(js: true にして利用する必要がある！！)
+# Rails がブラウザ に返した HTML を見る
+scenario "guest adds a project" do
+  visit projects_path
+  save_and_open_page
+  click_link "New Project"
+end
+
+
+### Rack::Test
+速くて信頼性の高いドライバ
+JSのの実行はサポートしていない
+
 -----------FactoryBot-----------
 テスト用データの作成をサポートするgem
 Railsが標準で用意しているFixture (フィクスチャ)の代替
