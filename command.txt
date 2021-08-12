@@ -1223,7 +1223,7 @@ heroku run rails db:migrate
 git fetch origin
 git merge origin master
 
-# 直前のコミットの取り消し
+# 直前のコミットの取り消し（indexなども直前のコミットの状態に戻す）
 git reset --hard HEAD^
 
 # addを取り消す
