@@ -1,3 +1,4 @@
+
 ## エラー
 # unterminated string meets end of file：引用符の閉じ忘れ
 # parse error：文法間違い。ifやwhileに対するend忘れであることが多い。

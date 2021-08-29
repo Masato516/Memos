@@ -1215,6 +1215,24 @@ git rebase --abort
 # fast-forward(早送り)マージ
 # 親ブランチが分岐した時から変更されていない時に、簡単にできるマージのこと
 
+
+## git rebase -i
+過去のコミットをまとめる
+p pick: 最終的に残すコミット
+s square: 
+f fixup:
+
+
+
+# git rebase を間違えた場合
+1. git reflogで戻りたい番号を確認
+2. git reset --hard 番号 で戻る
+3. git rebase --abort でrebase自体を取り消す
+
+## git rebase --abort
+rebase自体を取り消す！！
+
+
 # ローカルからリモートリポジトリにpush
 git push heroku master
 heroku run rails db:migrate

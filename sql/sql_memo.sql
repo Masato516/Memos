@@ -588,3 +588,73 @@ yum list installed | grep 検索ワード
 
 dbコンテナ内でbash操作する
 docker exec -it recruit_db_container bash
+
+
+
+
+
+
+
+
+
+
+
+EXPLAIN
+\G: きれいに出力
+Nested Loop Join
+
+Multi Column INDEX
+最もデータがかぶらないやつからindexを貼る
+
+カバリングインデックス
+
+hint句
+
+straight join句
+
+RDB immutable
+
+
+
+
+
+
+
+
+
+
+  id integer PRIMARY KEY AUTOINCREMENT,
+  name text NOT NULL,
+  password text NOT NULL,
+  -- 1は男性, 2は女性です。
+  gender integer,
+  created_at text NOT NULL,
+  -- ユーザーを「削除」していない場合は`NULL`、「削除」した場合は`DATETIME`になります。
+  deleted_at text NULL
+
+
+-- 一行しか出力されない！！！
+SELECT *
+FROM users
+GROUP BY name, password, gender, created_at, deleted_at
+HAVING COUNT(*) > 1
+
+
+SELECT *
+FROM users
+WHERE (name, password, gender, created_at, deleted_at) IN (
+      SELECT name, password, gender, created_at, deleted_at
+      FROM users
+      GROUP BY name, password, gender, created_at, deleted_at
+      HAVING COUNT(*) > 1
+)
+
+-- 一行しか出力されない！！！
+SELECT *
+FROM
+  (
+    SELECT *, COUNT(*) AS CNT
+    FROM users
+    GROUP BY name, password, gender, created_at, deleted_at
+  )
+WHERE CNT > 1

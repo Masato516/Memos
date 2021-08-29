@@ -1,74 +1,218 @@
-# hoge("GET", "/hello") == ["200 OK", "こんにちは"]
-# hoge("GET", "/aaa") == ["404 NotFound", "ないです"]
+# 4点
+num_of_steps = gets.chomp.to_i
 
-# responses = {
-#   ["GET", "/hello"]: ["200 OK", "こんにちは"]
-# }
+answer_arr = []
 
-# def hoge(method, path)
-#     responses[[method, path]]
-#     if method == "GET" && path == "/hello"
-#         ["200 OK", "こんにちは"]
-#     elsif method == "GET" && path == "/bye"
-#         ["200 OK", "さよなら"]
-#     elsif method == "POST" && path == "/bye"
-#         ["200 OK", "ばいばい"]
-#     else
-#         ["404 NotFound", "ないです"]
-#     end
-# end
+if num_of_steps <= 49
+  # 必要な横のマス数
+  width_required = num_of_steps + 1
+  # 必要なマス数は最小の２
+  height_required = 2
+  # 必要な横のマス数分の配列を作成
+  first_row = Array.new(width_required, '.')
+  first_row[0] = 'S'
+  first_row[num_of_steps] = 'G'
+  second_row = Array.new(width_required, '.')
+  answer_arr.push(first_row, second_row)
+elsif num_of_steps <= 98
+  # 必要な横のマス数を最大の50を利用
+  width_required = 50
+  num_of_vertical_steps = height_required - 49
+  height_required = num_of_vertical_steps + 1
+  first_row = Array.new(width_required, '.')
+  first_row[0] = 'S'
+  answer_arr.push(first_row)
+  height_required.times do 
+    answer_arr << Array.new(50, '.')
+  end
+  answer_arr[num_of_vertical_steps][0] = 'G'
+end
 
-
-# def hello(method)
-#     if method == "GET"
-#       .. 
-#     end
-# end
-
-
-# array = [1,2,2,3]
-
-# p array.permutation(4).to_a
-
-
-# # Arrayクラスに入れ替えを行なうメソッドを追加
-# class Array
-#   def swap!(a, b)
-#     self[a], self[b] = self[b], self[a]
-
-#     self
-#   end
-
-#   def swap(a, b)
-#     self.dup.swap!(a, b)
-#   end
-# end
+puts [height_required, width_required].join(" ")
+answer_arr.each { |column| puts column.join("") }
 
 
-# input_line = gets.chomp.split(" ").map(&:to_i)
-# # たて線の数とよこ線の数を取得
-# side_num, vertical_num = input_line
-# # よこ線のスタートする線の位置
-# start_point_arr = gets.chomp.split(" ").map(&:to_i)
-# # あみだくじの下の番号
-# target_numbers = gets.chomp.split(" ").map(&:to_i)
 
-# ## 本来あるべき下の番号を求める
-# # 上の番号を生成
-# upper_numbers = (1..side_num).to_a
-# # たて線の数だけ数値の入れ替えをおこなう
-# i = 0
-# while i < vertical_num
-#   start_point = start_point_arr[i]
-#   upper_numbers.swap!(i, i+1)
-#   i += 1
-# end
-# answer_numbers = upper_numbers
 
-# swap_point = []
-# answer_numbers.map.with_index {|number, index|
-#   swap_point << index if number != target_numbers[index]
-# }
+
+
+num_of_column = gets.chomp.to_i
+
+table = []
+
+num_of_column.times do
+  column = gets.chomp.chars
+  table << column
+end
+
+answer = "No"
+
+table.each do |column|
+  answer = "Yes" if column.all? { |cell| cell == "o" }
+end
+
+table.transpose.each do |row|
+  answer = "Yes" if row.all? { |cell| cell == "o" }
+end
+
+
+
+righe_diagonal_square = []
+left_diagonal_square = []
+
+table.each_with_index do |column, index|
+  righe_diagonal_square << column[index]
+  left_diagonal_square << column.reverse[index]
+end
+
+
+answer = "Yes" if righe_diagonal_square.all? { |cell| cell == "o" }
+answer = "Yes" if left_diagonal_square.all? { |cell| cell == "o" }
+
+puts answer
+
+
+
+
+num_of_column = gets.chomp.to_i
+
+table = []
+
+num_of_column.times do
+  column = gets.chomp.chars
+  table << column
+end
+
+answer = "No"
+
+table.each do |column|
+  answer = "Yes" if column.all? { |cell| cell == "○" }
+end
+
+table.transpose.each do |row|
+  p answer = "Yes" if row.all? { |cell| cell == "○" }
+end
+
+
+
+righe_diagonal_square = []
+left_diagonal_square = []
+
+table.each_with_index do |column, index|
+  righe_diagonal_square << column[index]
+  left_diagonal_square << column.reverse[index]
+end
+
+# p righe_diagonal_square
+# p left_diagonal_square
+
+answer = "Yes" if righe_diagonal_square.all? { |cell| cell == "○" }
+answer = "Yes" if left_diagonal_square.all? { |cell| cell == "○" }
+
+puts answer
+
+
+price, postage = gets.chomp.split().map( &:to_i )
+
+if price >= 3000
+  if postage <= 700
+    postage = 0
+  elsif postage > 700
+    postage -= 700
+  end
+elsif price < 3000
+  if postage <= 700
+    postage /= 2
+  elsif postage > 700
+    postage -= 350
+  end
+end
+
+puts price + postage
+
+
+postage > 700 ? (postage -= 700) : (postage = 0)
+
+postage > 700 ? (postage -= 350) : (postage /= 2)
+
+
+
+### pixiv コーディングテストで教えてもらった書き方
+hoge("GET", "/hello") == ["200 OK", "こんにちは"]
+hoge("GET", "/aaa") == ["404 NotFound", "ないです"]
+
+responses = {
+  ["GET", "/hello"]: ["200 OK", "こんにちは"]
+}
+
+def hoge(method, path)
+    responses[[method, path]]
+    if method == "GET" && path == "/hello"
+        ["200 OK", "こんにちは"]
+    elsif method == "GET" && path == "/bye"
+        ["200 OK", "さよなら"]
+    elsif method == "POST" && path == "/bye"
+        ["200 OK", "ばいばい"]
+    else
+        ["404 NotFound", "ないです"]
+    end
+end
+
+
+def hello(method)
+    if method == "GET"
+      .. 
+    end
+end
+
+##################################
+
+
+
+
+array = [1,2,2,3]
+
+p array.permutation(4).to_a
+
+
+# Arrayクラスに入れ替えを行なうメソッドを追加
+class Array
+  def swap!(a, b)
+    self[a], self[b] = self[b], self[a]
+
+    self
+  end
+
+  def swap(a, b)
+    self.dup.swap!(a, b)
+  end
+end
+
+
+input_line = gets.chomp.split(" ").map(&:to_i)
+# たて線の数とよこ線の数を取得
+side_num, vertical_num = input_line
+# よこ線のスタートする線の位置
+start_point_arr = gets.chomp.split(" ").map(&:to_i)
+# あみだくじの下の番号
+target_numbers = gets.chomp.split(" ").map(&:to_i)
+
+## 本来あるべき下の番号を求める
+# 上の番号を生成
+upper_numbers = (1..side_num).to_a
+# たて線の数だけ数値の入れ替えをおこなう
+i = 0
+while i < vertical_num
+  start_point = start_point_arr[i]
+  upper_numbers.swap!(i, i+1)
+  i += 1
+end
+answer_numbers = upper_numbers
+
+swap_point = []
+answer_numbers.map.with_index {|number, index|
+  swap_point << index if number != target_numbers[index]
+}
 
 # # 両隣の数値を入れ替えるだけで済む場合
 # if swap_point.length == 2 && (swap_point[1] - swap_point[0]) == 1
