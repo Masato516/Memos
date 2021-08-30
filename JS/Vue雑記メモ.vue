@@ -1018,13 +1018,11 @@ new Vue({
 <div id="app1">
   <p>{{ message }}</p>
 </div>
-
 <div id="app2">
   <p>{{ message }}</p>
   <button @click="changeMessage1">メッセージ1を変更</button>
 </div>
-
-<button @click="changeMessage1">メッセージ1を変更</button>  <-- #app2の外側なので動作しない！！
+<button @click="changeMessage1">動かないボタン</button>  <-- #app2の外側なので動作しない！！
 
 var vm1 = new Vue({
 	el: '#app1',
@@ -1032,7 +1030,6 @@ var vm1 = new Vue({
   	message: 'メッセージ１'
   }
 })
-
 var vm2 = new Vue({
 	el: '#app2',
   data: {
@@ -1040,7 +1037,148 @@ var vm2 = new Vue({
   },
   methods: {
   	changeMessage1: function() {
-    	vm1.message = '変更済みメッセージ１'
+    	vm1.message = '変更済みメッセージ１'  <-- 外側のVueインスタンスのアクセスには、変数経由で書き換える
     }
   }
 })
+
+
+
+// リアクティブシステム(getter、setter、Watcher)がどのように動いているか確認し、
+// プロパティが後から追加できないことを確認する
+
+<div id="app">
+  <p>{{ message }}</p>
+  <p>{{ name }}</p>
+  <button @click="addition = '変更済データ'">変更</button>  <- HTMLのnameは変化しない(リアクティブでない
+</div>
+
+var vm = new Vue({
+	el: '#app',
+  data: { // getterとsetter(get message、set message)が作成される
+  	message: 'デフォルト'
+  }
+})
+
+// あと付けのdata
+vm.addition = '追加で加えたデータ'
+
+
+
+
+// あと付けだとリアクティブにはならないが、先にオブジェクトを作成して入れ込むことはできる！！！
+
+<div id="app">
+  <p>{{ message }}</p>
+  <p>{{ name }}</p>
+</div>
+
+// ↓これ！！！
+var data = {
+	message: 'こんにちは',
+  name: '八木'
+}
+
+var vm = new Vue({
+	el: '#app',
+  data: data
+})
+
+// dataプロパティにアクセス
+console.log(vm.$data);  <- 大体、元々備わっているプロパティには、$(ダラー)がついている
+
+console.log(vm.$data == data) 
+//=> true
+
+
+
+// dataはなぜコンポーネントにおいて関数である必要があるの
+Vue.component('my-component', {
+	data: function() {   <-- コンポーネントにおいては、関数である必要がある
+  	return {
+    	number: 12
+    }
+  },
+  template: '<p>いいね({{ number }})</p>'
+})
+
+new Vue({
+	el: '#app'
+})
+
+
+var global_data = { // numberを共有する
+	number: 12
+}
+
+Vue.component('my-component', {
+	data: function() {
+  	return global_data 　 <-- 共有の変数
+  },
+  template: '<p>いいね({{ number }})<button @click="increment">+1</button></p>',
+  methods: {
+  	increment: function() {
+    	this.number += 1
+    }
+  }
+})
+
+new Vue({
+	el: '#app'
+})
+
+// 全て一緒に数値が追加される
+いいね(17)+1
+
+いいね(17)+1
+
+いいね(17)+1
+
+
+// コンポーネントにおける、ローカル登録とグローバル登録の違いを理解する
+
+var component = {
+	data: function() {
+  	return {
+    	number: 12
+    }
+  },
+  template: '<p>いいね({{ number }})<button @click="increment">+1</button></p>',
+  methods: {
+  	increment: function() {
+    	this.number += 1;
+    }
+  }
+}
+
+new Vue({
+	el: '#app1',
+  components: {
+  	'my-component': component
+  }
+})
+
+new Vue({
+	el: '#app2'
+})
+
+
+//// コンポーネントのローカル登録
+var ComponentA = { /* ... */ }
+
+var ComponentB = {
+  components: {
+    'component-a': ComponentA
+  },
+  // ...
+}
+// もしくは、Babel と Webpack のようなものを用いて 
+// ES2015 モジュールを利用しているならば、このようになる
+import ComponentA from './ComponentA.vue'
+
+export default {
+  components: {
+    ComponentA
+  },
+  // ...
+}
