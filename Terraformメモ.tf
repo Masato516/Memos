@@ -1,0 +1,6 @@
+AWS_PROFILE=sh0162vi_terraform terraform apply
+AWS_PROFILE=sh0162vi_terraform terraform plan
+AWS_PROFILE=sh0162vi_terraform terraform destroy
+AWS_PROFILE=sh0162vi_terraform terraform destroy recruit_web_1c
+AWS_PROFILE=sh0162vi_terraform terraform destroy -target=aws_subnet.recruit_web_1c
+AWS_PROFILE=sh0162vi_terraform terraform destroy
