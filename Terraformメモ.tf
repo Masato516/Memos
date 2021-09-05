@@ -1,6 +1,118 @@
-AWS_PROFILE=sh0162vi_terraform terraform apply
-AWS_PROFILE=sh0162vi_terraform terraform plan
-AWS_PROFILE=sh0162vi_terraform terraform destroy
-AWS_PROFILE=sh0162vi_terraform terraform destroy recruit_web_1c
-AWS_PROFILE=sh0162vi_terraform terraform destroy -target=aws_subnet.recruit_web_1c
-AWS_PROFILE=sh0162vi_terraform terraform destroy
+公式ドキュメント: https://registry.terraform.io/
+
+
+## tfenv
+terraform のバージョン管理ツール
+
+
+## tfファイル
+カレントディレクトリの直下のファイルしか読み込まれない！！！
+全ての直下のファイルが読み込まれるため、
+ファイル名は何でも良い！！！
+
+
+## resource
+リソース（インフラ）を作るための文
+
+
+## data
+リソースを取得するための文
+すでに作成済みのリソースの情報を取得する
+
+
+## tfstateファイル
+terraformで管理しているインフラリソースを
+全て記載したjsonファイル
+
+* S3などで管理する例
+バケットを作成し、以下のファイルを作成・反映
+/backend.tf--------------------------------------------------
+terraform {
+  required_version = "1.0.5"
+  backend "s3" {
+    profile = "sh0162vi_terraform"
+    bucket = "terraform-masa-test-tfstate" # バケット名
+    key    = "terraform.tfstate"           # バケット内のキーのパス
+    region = "ap-northeast-1"
+  }
+}
+
+provider "aws" {
+  region = "ap-northeast-1" # リージョン名
+}
+-------------------------------------------------------------
+
+
+
+## 設定ファイルと認証情報ファイルの設定
+
+AWS CLI コマンドに適用できる設定と認証情報の集まり
+コマンドを実行するプロファイルを指定すると、
+設定と認証情報を使用してそのコマンドが実行される。
+プロファイルが明示的に参照されない場合に使用される、
+default プロファイルを 1 つ指定できる
+
+$ aws configure で簡単に設定できる 
+(~/.aws/credentials と ~/.aws/configure に保存される)
+
+例--------------------------------------------
+~/.aws/credentials
+[プロファイル名]
+aws_access_key_id = ~~~~~~~~~~~~~~~~~
+aws_secret_access_key = ~~~~~~~~~~~~~~~~~~~~~
+
+~/.aws/config
+[profile プロファイル名]
+region = ap-northeast-1
+output = json
+----------------------------------------------
+
+
+
+## terraform init
+ワークスペースを初期化するコマンド。
+Terraform を実行するためには、1番初めに terraform init でワークスペースを初期化することが必須
+
+
+
+## terraform apply
+.tf ファイルに記載された情報を元にリソースを作成するコマンド。
+リソースが作成されると terraform.state というファイルに、
+作成されたリソースに関連する情報が保存される
+また、2度目以降の実行後には、1世代前のものが terraform.tfstate.backup に保存される形となる
+Terraform において、この状態を管理する terraform.state ファイルが非常に重要になってくる。
+
+使用例
+AWS_PROFILE=プロファイル名 terraform apply
+
+
+## terraform validate
+terraformの構文チェック
+あんまり使わない（planで大体わかる！）
+
+
+## terraform plan ()
+Terraform による実行計画を参照するコマンド
+.tf ファイルに記載された情報を元に、
+どのようなリソースが 作成/修正/削除 されるかを参照することが可能
+
+使用例
+AWS_PROFILE=プロファイル名 terraform plan
+
+
+
+## terraform show
+terraform.state ファイルを元に現在のリソースの状態を参照するコマンド
+
+
+
+## terraform destroy
+.tf ファイルに記載された情報を元にリソースを削除するコマンド
+なお、実行すると terraform.tfstate のリソース情報がスカスカになり、
+削除直前のものは terraform.tfstate.backup に保存される形となる
+
+使用例
+# 全てのリソースを削除
+AWS_PROFILE=プロファイル名 terraform destroy
+# 特定のリソースを削除
+AWS_PROFILE=プロファイル名 terraform destroy -target=aws_subnet.recruit_web_1c
