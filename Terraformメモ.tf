@@ -91,7 +91,7 @@ terraformの構文チェック
 あんまり使わない（planで大体わかる！）
 
 
-## terraform plan ()
+## terraform plan (dry-run)
 Terraform による実行計画を参照するコマンド
 .tf ファイルに記載された情報を元に、
 どのようなリソースが 作成/修正/削除 されるかを参照することが可能
@@ -116,3 +116,46 @@ terraform.state ファイルを元に現在のリソースの状態を参照す�
 AWS_PROFILE=プロファイル名 terraform destroy
 # 特定のリソースを削除
 AWS_PROFILE=プロファイル名 terraform destroy -target=aws_subnet.recruit_web_1c
+
+
+
+## アウトプット
+EC2 インスタンスに紐付けた Elastic IP ( 固定 IP ) の値など
+インフラ構築完了後に各種リソースに割り当てられた属性値を知りたい場合がある
+テンプレートに output ブロックを記述することで 
+terraform コマンド実行時に指定した値がコンソール上に出力されるようになる
+
+・構文
+output "<アウトプットしたい属性の説明>" {
+  value = "<アウトプットする属性値>" 
+}
+
+例
+output "elastic_ip_of_web" {
+  value = "${aws_eip.web.public_ip}"
+}
+
+
+
+
+## ルートテーブル
+
+ルートテーブルを作成する際は下記の作成が必要
+
+・ルートテーブル: aws_route_table
+vpc_idを指定するだけ
+名前をつけたければtagsでNameを指定
+
+・ルートテーブルとサブネットの関連付け: aws_route_table_association
+route_table_idとsubnet_idを指定して
+ルートテーブルとサブネットを関連付け
+
+・IGWへのルーティング(サブネットからインターネットへの接続): aws_route
+destination_cidr_blockで送信先を指定
+またdepends_onで依存を作成することができる
+→ aws_route_tableが存在しない場合は
+  aws_routeは存在し得ないので、aws_routeを指定する
+
+
+
+## Route53
