@@ -306,3 +306,17 @@ doc: xxxのドキュメント更新
 ドキュメントの修正である -> doc: xxxのドキュメント更新
 typo である -> style: or fix: typo の修正
 そもそも、コメントの意味が伝わりにくい or 間違っている -> fix: xxxだったのでコメントを yyy に修正
+
+
+
+
+-------------参考資料---------------
+GitHubのissueとcommitを紐付ける
+https://qiita.com/cotolier_risa/items/210db74e6496d4359be7
+
+# Git勉強会
+https://github.com/hironomiu/Git-GitHub-Training
+
+# Git・GitHubに隠された便利な機能
+https://qiita.com/unbabel/items/1cf05f2a2be3d6fb3388#%E7%A9%BA%E8%A1%8C%E3%82%92%E7%84%A1%E8%A6%96
+https://github.com/sotayamashita/github-cheat-sheet
