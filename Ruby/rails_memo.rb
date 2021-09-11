@@ -3058,3 +3058,29 @@ Webpacker::Manifest::MissingEntryError
 
 carriewaveの画像表示
 <%= image_tag blog.main_image.to_s %>
+
+
+
+
+
+
+------------STI--------------
+Job.find_by(company_id: company.id) を外部キー記述
+Job.find_by(company: company) をモデル記述 と呼称
+
+STIしているモデルを対象とした時に、モデル記述はエラーを引き起こす
+以下のコードは、外部キー記述では正常に動いていると思いますが、
+モデル記述では動かなくなる可能性があります。
+（※STIだと普通のモデルのような内部的な解決をしてくれないことがあります）
+job_ids = company.jobs.pluck(:id)
+access_reports = JobAccessReport.where(job_id: job_ids)
+
+※コンソールにて、以下のコードで確認(色々出力されると面倒なのでcountを使用)
+・外部キー記述
+JobAccessReport.where(job_id: [1, 3]).count
+#=> 1368(正常)
+
+・モデル記述
+jobs = Job.where(id: 1..3)
+JobAccessReport.where(jobs: jobs).count
+#=> ActiveRecord::StatementInvalid (Mysql2::Error: Unknown column 'access_reports.jobs' in 'IN/ALL/ANY subquery') 
