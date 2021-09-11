@@ -1,0 +1,308 @@
+------------git---------------
+# デプロイ(heroku)
+# 初めてのデプロイする時
+heroku login
+
+gem ファイル編集
+
+# Gitのリポジトリを新たに作成
+# ディレクトリを指定しなければ、コマンドを実行したワーキング・ディレクトリの直下にリポジトリのための「.git」というサブディレクトリが作成される
+git init
+heroku create アプリ名
+
+# 最初のコミットはrebase等がやりづらいので空コミット(--allow-empty)が良い
+git commit --allow-empty -m "first commit"
+
+# 新しいブランチを作成
+git branch 新しいブランチ名
+
+# 新しいブランチを作成して切り替える
+git checkout -b 新しいブランチ名
+
+# 再デプロイの際に毎回やること
+
+# ブランチを切り替える
+git checkout ブランチ名
+git checkout master
+
+# ブランチ一覧
+git branch
+
+# 現在のブランチに指定したブランチの情報を加える
+# 子ブランチの変更点を親ブランチに加える？
+git merge 加えるブランチ名
+git branch sample_branch
+
+# リモートの別ブランチの更新分をローカルの自分のブランチに反映(merge)する
+1. 一度ローカルでリモートの別ブランチにcheckout
+2. 別ブランチのリモートの変更分を反映
+3. 自分のブランチにcheckout
+4. ローカルに反映した別ブランチの反映分を自分のブランチにマージ
+  git merge <別ブランチ名>
+
+# gitのローカルのブランチ名を変更
+git branch -m <古いブランチ名> <新しいブランチ名>
+
+# 今開いているブランチをリネームする場合
+git branch -m <新しいブランチ名>
+
+# 変更差分をコミットせずに一時的に退避させることで保存できる
+# 作業中に他のブランチでの作業が必要になったときなどに便利
+git stash
+
+# untracked fileも含めて変更差分を退避()
+ git stash -u
+
+# メッセージを入れて一時退避
+git stash "メッセージ"  # saveがなくても良い
+git stash save "メッセージ"
+
+# 一時退避を元にもどす
+git stash pop # 最新のスタッシュを適用し、削除 
+git stash pop stash@{N} # N番目のスタッシュを適用し、削除
+
+# 一時退避の確認
+git stash list
+
+# 一時退避の消去
+git stash clear
+
+# N番目にスタッシュしたファイルの一覧を表示
+git stash show stash@{N}
+
+# N番目にスタッシュしたファイルの変更差分を表示
+git stash show -p stash@{N}
+
+# 全てのファイルを保存対象にする
+作業ディレクトリ→ステージングエリア
+git add *
+git add -A(多分上と一緒)
+
+# ファイルの変更をgitレポジトリ(ローカル)に保存
+# ステージングエリア→ローカルリポジトリ
+git commit -m "initial commit"
+
+## 直前のコミットの修正 (pushする前のコミットを修正したいときだけ)
+push済みのコミットを修正してしまうと、
+禁断のコマンドgit push -fを使わざるを得ない
+
+# コミットメッセージの修正
+git commit --amend -m "修正されたコミット"
+
+# コミット内容を後から追加
+・コミット後に追加で修正を行った
+・git addし忘れたファイルがあった
+・一時コミットを残したくない
+--no-editオプション：
+前回のコミットメッセージのままコミット
+git commit --amend --no-edit
+
+=> このコマンドでできないこと
+コミットからファイルを削除する
+コミットに追加することはできますが、既にコミットに含まれた修正を外すことはできない
+これがしたい場合はgit resetを使う
+
+=> 2つ以上前のコミットを修正する
+あくまで直前のコミットを修正するコマンドなので、
+これ単独では2つ以上前のコミットは修正できない
+これがしたい場合はgit rebase -iと組み合わせて使う
+
+
+# 別ブランチの任意のコミットによる修正を別のブランチに取り込む
+# conflictがあると使えない！！
+git cherry-pick <コミットID>
+
+# git cherry-pick D E J と同等の結果が得られる
+# 参考: https://liginc.co.jp/web/tool/79390
+# 参考: https://backlog.com/ja/git-tutorial/stepup/04/
+git rebase master
+
+# git rebase の中止
+git rebase --abort
+
+# 親ブランチの変更点を子ブランチに加える時はrebase,cherry-pickを使う
+# masterブランチの履歴がbugfixブランチを分岐した時より進んでしまっている場合、
+# 両方のmasterブランチでの変更内容とbugfixブランチでの変更内容を一つにまとめる必要がある
+
+# fast-forward(早送り)マージ
+# 親ブランチが分岐した時から変更されていない時に、簡単にできるマージのこと
+
+
+## git rebase -i
+過去のコミットをまとめる
+p pick: 最終的に残すコミット
+s square: 
+f fixup:
+
+
+
+# git rebase を間違えた場合
+1. git reflogで戻りたい番号を確認
+2. git reset --hard 番号 で戻る
+3. git rebase --abort でrebase自体を取り消す
+
+## git rebase --abort
+rebase自体を取り消す！！
+
+
+# ローカルからリモートリポジトリにpush
+git push heroku master
+heroku run rails db:migrate
+
+# githubからEC2に変更分をpull
+git fetch origin
+git merge origin master
+
+# 直前のコミットの取り消し（indexなども直前のコミットの状態に戻す）
+git reset --hard HEAD^
+
+# addを取り消す
+git reset --mixed HEAD
+git reset HEAD
+
+# 直前のコミットの取り消し（コミットのみ取り消し）
+git reset --soft HEAD^
+
+# 直前のコミットの取り消し（2つ前のコミットした状態に全てのローカルを戻す）
+# コミット後の変更を全部消したい(前回コミットした状態に戻す)
+git reset --hard HEAD^
+
+# git reset --hardで間違えた時
+# reflog確認
+git reflog                                                                                                                                          e597fa9 HEAD@{0}: reset: moving to e597fa9
+6af4454 HEAD@{1}: commit: 戻したいコミット
+
+# 戻したいコミットに戻す
+git reset --hard 6af4454
+
+# ローカルブランチをリモートの状態に戻す
+git reset --hard origin/ブランチ名
+
+# 空のカラムを作成
+heroku run rails db:migrate
+# heroku上のデータベースに初期データを入れる
+heroku run rails db:seed
+heroku open
+
+# github関係
+githubで新規リポジトリ作成->URLを取得
+# リモートリポジトリ情報を追加
+git remote add origin 追加するリモートリポジトリ
+# 例(githubにて)
+git remote add origin https://github.com/Masato516/recruit_app.git
+# リモートリポジトリの削除
+git remote rm origin
+
+# ローカルレポジトリからgithubにアップロード
+git push -u origin master
+
+#既存のリポジトリ（リモートリポジトリ）にあるソースコードなどを入手
+#リポジトリを自分の環境に複製
+git clone https://github.com/Masato516/recruit_app.git
+git clone https://github.com/ユーザ名/REPOSITORY.git
+
+# リモートリポジトリの内容がバージョンアップされたら時などに最新版を取得
+git pull
+
+# -b ブランチ名 [対象]
+#対象のチェックアウト後に、新しいブランチを開始
+git checkout -b ブランチ名
+
+# Githubのブランチへのpush(新規ブランチだとリモートのブランチが作成される)
+git push -u origin ブランチ名
+-u: 上流ブランチとしてセット
+
+# Githubのブランチを削除
+git push origin :ブランチ名
+
+-n、--dry-run
+dry runと言われる、コマンド実行はしますが実際には反映されずどういったことが起こるかを知ることができるようなものがあります。
+実際にはaddはされませんが、どのファイルがaddされるか一覧で見ることができます。
+$ git add -n -A
+$ git add . --dry-run
+
+-p
+作りたいコミットごとに変更をstageにあげる
+$ git add -p ファイル名
+Stage this hunk [y,n,q,a,d,s,e,?]?
+yコマンド: 表示された差分をそのままstageに上げる
+eコマンド: vimでstageに上げる変更を自分で指定
+sコマンド: 差分を行単位で切り分けてより細かいレベルでステージに上げるかどうかを決められる
+nコマンド: 表示された差分をstageに上げない
+
+
+# バージョンを指定してgemをインストール
+gem install gemの名前 -v バージョン
+#sqlite3のバージョンを指定してインストールした例
+gem install sqlite3 -v "1.3.8"
+
+-------------github----------------
+プライベートレポジトリ(＆organization?)レポジトリだと
+SSH接続でないといけない (git@github〜で始まるURLが)
+
+Gitとgithubアカウントを設定済みで別のgithubアカウントを設定する場合
+1. サブアカウント用の鍵を作る
+$ cd ~/.ssh/
+$ ls
+
+2. 鍵の生成 と 公開鍵 をGithubに登録
+# コマンドのオプション-fでファイル名を指定してファイルが上書きされないよう注意(デフォルトはid_rsaみたいな感じ)
+$ ssh-keygen -t rsa -C "your_email@youremail.com" -f [file name]
+  # Creates a new ssh key using the provided email
+  # Generating public/private rsa key pair.
+  # Enter file in which to save the key (/c/Users/you/.ssh/[file name]): [Press enter]
+  # Enter passphrase (empty for no passphrase): [Type a passphrase]
+  # Enter same passphrase again: [Type passphrase again]
+
+$ cd ~/.ssh
+$ chmod 600 id_rsa
+
+3. ~/.ssh/configファイルに以下のようにHost情報を記述
+
+Host github-private
+  User git
+  Port 22
+  HostName github.com
+  IdentityFile ~/.ssh/github-private_rsa
+  TCPKeepAlive yes
+  IdentitiesOnly yes
+
+Host          	ホスト名	                githubの場合はgithub-{githubアカウント名}を指定
+User          	ログインユーザー名	        githubの場合はgit
+Port          	ポート	デフォルトはPort 22
+HostName	      ホストのアドレス、またはIP   githubの場合はHostName github.com
+IdentityFile	  利用する秘密鍵を指定する   	 秘密鍵へのパスを指定
+IdentitiesOnly	持続的接続	               yesを指定
+TCPKeepAlive	  IdentityFileを利用する場合  yesを指定
+
+4. 接続テスト
+$ ssh -T github-private(ホスト名)
+# エラーのようなメッセージが出るが問題ない(shellアクセスは許可していない旨)
+
+
+----------------------gitメッセージ-------------------------
+
+feat: 新しい機能の追加（ex. Google Analytics APIによるPV数の取得）
+fix: バグ修正
+docs: ドキュメントの変更（ある機能の説明修正、READMEの追記・修正）
+style: コード自体の動作に影響しないコードスタイルの変更
+     （ex. ホワイトスペース、フォーマット、セミコロンや改行など）
+refactor: バグ修正や機能追加ではないコードの変更（ex. DRYなコードにするためのメソッド定義、変数名・カラム名などの命名の変更）
+perf: パフォーマンス向上のためのコード変更（ex. N+1問題の解決など）
+test: 不足しているテストの追加や既存テストの修正
+chore: ビルドプロセスやドキュメント生成などの補助ツールやライブラリの導入・変更
+　   （新しいgemの導入、Dockerfileのライブラリの追加など）
+etc: 上記では分類できない変更（一時的に作成しておき、コミットデータが集まったら見直し/分類）
+上記以外で言えば、
+safety:  馬鹿避け対策やセキュリティ強化（current_user.jobs.〜）
+debug: トレースログやデバッグ用の仕込み　　があります。
+まずは上記の９つで始めてみて
+prefixを選定していく形で良いですかね？
+また、上のprefixだけだと
+UIの作成に当てはまるものがないものが出てきそうなので
+そこは考慮する必要はありそうです。
+コミットメッセージ例
+doc: xxxのドキュメント更新
+ドキュメントの修正である -> doc: xxxのドキュメント更新
+typo である -> style: or fix: typo の修正
+そもそも、コメントの意味が伝わりにくい or 間違っている -> fix: xxxだったのでコメントを yyy に修正
