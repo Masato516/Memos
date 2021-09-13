@@ -158,6 +158,10 @@ destination_cidr_blockで送信先を指定
 
 
 
+## Security Group
+
+
+
 ## Route53
 
 AWS上でのDNS（ちなみに53とは、DNSの使うポート番号）
@@ -177,7 +181,7 @@ IPアドレスとドメイン名の紐付けに関して、自分の管理する
 
 
 
-# レコードの追加: aws_route53_zone
+# レコードの追加: aws_route53_record
 
 
 
@@ -187,3 +191,129 @@ TTL: キャッシュの接続時間
 Value: 割り当てる値（Elastic IPアドレス）
 RoutingPolicy: Valueに複数のIPアドレスを記入して、冗長構成や負荷分散するときの振り分け方を決める項目
                １つしかしていない時は意味がない。
+
+
+
+## CloudFront
+
+
+
+
+## output
+
+EC2インスタンスのパブリックIPなど、
+環境を構築した結果リソースに割り当てられた属性値を知りたい場合がある
+その時に役立つのがoutput
+
+
+# 書式
+output "<アウトプットする属性の説明>" {
+  value = "<アウトプットする属性値>"
+}
+
+output "public ip of cm-test" {
+  value = "${aws_instance.cm-test.public_ip}"
+}
+
+
+
+## workspace
+本番環境やステージング環境などに分けられる
+(https://www.terraform.io/docs/language/state/workspaces.html)
+
+$ terraform workspace list
+workspace（作業空間）の一覧を出力
+* default <- 現在のworkspace
+
+
+$ terraform workspace new <workspace名>
+workspaceを作成
+
+例.
+terraform workspace new production
+
+
+
+#### モジュールなどのリソースの再利用
+## module
+プログラミング言語でいうクラスのようなもの
+
+
+## Input variable (入力変数)
+関数の引数のようなもの
+
+
+## Output variabel (出力変数)
+moduleの戻り値のようなもの
+(関数の戻り値のようなもの)
+
+
+## local variable (ローカル変数)
+関数の一時的なローカル変数のようなもの
+
+
+使用例.
+(~/modules/vpc_subnet.tf: モジュールを定義する側)-----------
+
+resource "aws_vpc" "recruit_web" {
+  cidr_block = var.vpc_cidr_block  # 入力変数(input variable)を受け取る
+
+  tags = {
+    Name = "vpc_for_recruit_web"
+  }
+}
+
+resource "aws_subnet" "recruit_web_1c" {
+  vpc_id            = aws_vpc.recruit_web.id
+  cidr_block        = var.subnet_1c_cidr_block
+  availability_zone = "ap-northeast-1c"
+
+  tags = {
+    Name = "public_subnet_for_recruit_web"
+  }
+}
+-------------------------------------------------
+
+(~/modules/terraform.tfvars: 入力変数を宣言)-------
+
+variable "vpc_cidr_block" {
+  type = string
+}
+
+variable "subnet_1c_cidr_block" {
+  type = string
+}
+
+-------------------------------------------------
+
+(~/vpc.tf: モジュールを生成する側)-------------------
+
+module "vpc_subnet_1" {
+  # ~/modules/vpc_subnet.tf のリソースを作成
+  source = "./modules/vpc_subnet"
+  # 入力変数に値を代入
+  var.vpc_cidr_block       = "10.0.0.0/16"
+  var.subnet_1c_cidr_block = "10.0.0.0/24"
+}
+
+# 2つめのVPCとサブネットのリソースを作成
+module "vpc_subnet_2" {
+
+  source = "./modules/vpc_subnet"
+
+  var.vpc_cidr_block       = "10.1.0.0/16"
+  var.subnet_1c_cidr_block = "10.1.0.0/24"
+}
+
+# 3つめのVPCとサブネットのリソースを作成
+module "vpc_subnet_3" {
+
+  source = "./modules/vpc_subnet"
+
+  var.vpc_cidr_block       = "10.2.0.0/16"
+  var.subnet_1c_cidr_block = "10.2.0.0/24"
+}
+-------------------------------------------------
+
+# 参考資料
+https://youtu.be/h1MDCp7blmg?t=4549
