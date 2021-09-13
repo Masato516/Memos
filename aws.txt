@@ -35,8 +35,8 @@ EC2インスタンスに適用可能なAWSの仮想ファイアウォールサ�
 
 
 ・デフォルト
-アウトバウンド：無制限の通信を許可
 インバウンド：全ての通信を禁止
+アウトバウンド：無制限の通信を許可
 
 
 --------ネットワークACL-----------
@@ -1239,3 +1239,30 @@ Client Hello に セッションID or チケット を送ることで
 セッションチケットの暗号化に使われる鍵を
 長期間使い続けることは望ましくないため
 定期的に更新する必要がある
+
+
+
+
+
+
+
+
+###### 参考資料
+最初にrootユーザーでやっておきたいことを書いておくと、ec2を新規作成した状態でも、必要なパッケージがインストール済みです。
+https://www.se-from30.com/aws/terraform-ec2-01-2/
+
+シンプルでセキュアなRails on ECSのTerraformによる実装
+https://qiita.com/reireias/items/df7905a1a25e6c11785e
+
+10分で理解するTerraform
+https://qiita.com/Chanmoro/items/55bf0da3aaf37dc26f73
+
+terraform を使ったAWS構成管理 ハンズオン
+https://53ningen.com/terraform-hands-on/
+
+[翻訳]Terraform_Commands(CLI)大全
+https://qiita.com/HirokiSakonju/items/79d4d950b0732f757eef#command-fmt
+
+Terraformで複数台のEC2インスタンスを構築する場合のTIPS
+(aws_instance 内の subnet_id の指定について参考にした)
+https://dev.classmethod.jp/articles/tips-for-creating-multiple-aws_instance-resources/
