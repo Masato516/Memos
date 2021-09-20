@@ -1,3 +1,7 @@
+//// 読むべき参考資料
+const イマドキのJavaScriptの書き方2018 = 'https://qiita.com/shibukawa/items/19ab5c381bbb2e09d0d9'
+
+
 // 連想配列
 // JavaScriptのオブジェクトそのもの
 // キーは文字列(に変換される)
