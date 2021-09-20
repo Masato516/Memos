@@ -236,6 +236,11 @@ gem install gemの名前 -v バージョン
 #sqlite3のバージョンを指定してインストールした例
 gem install sqlite3 -v "1.3.8"
 
+
+
+## 参考資料
+https://qiita.com/2m1tsu3/items/6d49374230afab251337
+
 -------------github----------------
 プライベートレポジトリ(＆organization?)レポジトリだと
 SSH接続でないといけない (git@github〜で始まるURLが)
