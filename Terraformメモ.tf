@@ -1,5 +1,5 @@
-公式ドキュメント: https://registry.terraform.io/
-
+公式ドキュメント = "https://registry.terraform.io/"
+公式チュートリアル = "https://learn.hashicorp.com/"
 
 ## tfenv
 terraform のバージョン管理ツール
@@ -67,6 +67,19 @@ region = ap-northeast-1
 output = json
 ----------------------------------------------
 
+
+## EC2のキーペア(秘密鍵・公開鍵)の作成・設定
+# pem
+https://docs.aws.amazon.com/ja_jp/AWSEC2/latest/UserGuide/ec2-key-pairs.html#:~:text=%E3%83%97%E3%83%A9%E3%82%A4%E3%83%99%E3%83%BC%E3%83%88%E3%82%AD%E3%83%BC%E3%81%AF%E3%80%81PEM%20%E5%BD%A2%E5%BC%8F%E3%81%A7%E3%81%AA%E3%81%91%E3%82%8C%E3%81%B0%E3%81%AA%E3%82%8A%E3%81%BE%E3%81%9B%E3%82%93%E3%80%82%E4%BE%8B%E3%81%88%E3%81%B0%E3%80%81ssh-keygen%20-m%20PEM%20%E3%82%92%E4%BD%BF%E7%94%A8%E3%81%97%E3%81%A6%20OpenSSH%20%E3%82%AD%E3%83%BC%E3%82%92%20PEM%20%E5%BD%A2%E5%BC%8F%E3%81%A7%E7%94%9F%E6%88%90%E3%81%97%E3%81%BE%E3%81%99%E3%80%82
+https://dev.classmethod.jp/articles/amazon-ec2-keypair-security/
+
+# 参考
+https://kenzo0107.hatenablog.com/entry/2017/03/27/215941
+
+
+# known_hostsファイルから情報を削除
+ssh-keygen -R web
+https://qiita.com/hana_shin/items/2003698873a5782b7efd
 
 
 ## terraform init
@@ -236,7 +249,7 @@ terraform workspace new production
 
 #### モジュールなどのリソースの再利用
 ## module
-プログラミング言語でいうクラスのようなもの
+プログラミング言語でいう クラス or 関数 のようなもの
 
 
 ## Input variable (入力変数)
@@ -253,7 +266,7 @@ moduleの戻り値のようなもの
 
 
 使用例.
-(~/modules/vpc_subnet.tf: モジュールを定義する側)-----------
+(~/modules/vpc_subnet/main.tf: モジュールを定義する側)-----------
 
 resource "aws_vpc" "recruit_web" {
   cidr_block = var.vpc_cidr_block  # 入力変数(input variable)を受け取る
@@ -274,7 +287,7 @@ resource "aws_subnet" "recruit_web_1c" {
 }
 -------------------------------------------------
 
-(~/modules/terraform.tfvars: 入力変数を宣言)-------
+(~/modules/variable.tf: 入力変数を宣言)-------
 
 variable "vpc_cidr_block" {
   type = string
@@ -286,34 +299,71 @@ variable "subnet_1c_cidr_block" {
 
 -------------------------------------------------
 
-(~/vpc.tf: モジュールを生成する側)-------------------
+(~/vpc.tf: モジュールを利用する側)-------------------
 
 module "vpc_subnet_1" {
-  # ~/modules/vpc_subnet.tf のリソースを作成
-  source = "./modules/vpc_subnet"
+  # ~/modules/vpc_subnet/ フォルダ下のリソースを作成
+  source = "./modules/vpc_subnet" # ディレクトリ！！
   # 入力変数に値を代入
-  var.vpc_cidr_block       = "10.0.0.0/16"
-  var.subnet_1c_cidr_block = "10.0.0.0/24"
+  vpc_cidr_block       = "10.0.0.0/16"
+  subnet_1c_cidr_block = "10.0.0.0/24"
 }
 
 # 2つめのVPCとサブネットのリソースを作成
 module "vpc_subnet_2" {
 
-  source = "./modules/vpc_subnet"
+  source = "./modules/vpc_subnet" # ディレクトリ！！
 
-  var.vpc_cidr_block       = "10.1.0.0/16"
-  var.subnet_1c_cidr_block = "10.1.0.0/24"
+  vpc_cidr_block       = "10.1.0.0/16"
+  subnet_1c_cidr_block = "10.1.0.0/24"
 }
 
 # 3つめのVPCとサブネットのリソースを作成
 module "vpc_subnet_3" {
 
-  source = "./modules/vpc_subnet"
+  source = "./modules/vpc_subnet" # ディレクトリ！！
 
-  var.vpc_cidr_block       = "10.2.0.0/16"
-  var.subnet_1c_cidr_block = "10.2.0.0/24"
+  vpc_cidr_block       = "10.2.0.0/16"
+  subnet_1c_cidr_block = "10.2.0.0/24"
 }
 -------------------------------------------------
 
+## 課題
+# 他のモジュールの値を参照する方法が分からない！！！！
+https://stackoverflow.com/questions/66433485/terraform-error-reference-to-undeclared-resource
+# 解決できそう
+https://zenn.dev/aquamarinearia/articles/terraform_module
+https://www.terraform.io/docs/language/modules/syntax.html#:~:text=Accessing%20Module%20Output%20Values
+
+module.<呼び出す際のモジュール名>.<output名>
+例.
+module.vpc_subnet_1.vpc_id
+
+
+## .tfvarsファイルの利用
+グローバル変数みたいなもの？？
+デフォルト値を上書きする変数定義ファイル
+
+例.
+(~/terraform.tfvars)-------------------
+vpc_cidr_block       = "10.2.0.0/16"
+subnet_1c_cidr_block = "10.2.0.0/24"
+---------------------------------------
+
+# 参考
+https://zaki-hmkc.hatenablog.com/entry/2021/05/04/122739#variable%E3%81%A7%E5%A4%89%E6%95%B0%E5%AE%9A%E7%BE%A9
+https://learn.hashicorp.com/tutorials/terraform/variables?in=terraform/configuration-language#assign-values-with-a-terraform-tfvars-file
+
+
+
 # 参考資料
 https://youtu.be/h1MDCp7blmg?t=4549
+
+terraform.tfvarsで変数セット
+variableに「デフォルト値」を定義できるけど、このデフォルト値を上書きする変数定義ファイルを別途使うこともできる
+ファイル名はterraform.tfvars固定
+(※ オプションでファイル名指定可能)
+https://zaki-hmkc.hatenablog.com/entry/2021/05/04/122739#:~:text=%E5%A4%89%E6%95%B0%E3%81%AE%E3%82%BB%E3%83%83%E3%83%88-,terraform.tfvars%E3%81%A7%E5%A4%89%E6%95%B0%E3%82%BB%E3%83%83%E3%83%88,-variable%E3%81%AB%E3%80%8C%E3%83%87%E3%83%95%E3%82%A9%E3%83%AB%E3%83%88
+
+
+
