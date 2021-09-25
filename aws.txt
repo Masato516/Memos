@@ -14,6 +14,10 @@ DB パラメーターグループを指定せずにDBサーバーを作成した
 デフォルト値の中には、DBパラメーターグループで変更できないものも存在する
 
 
+・参考資料
+【初心者向け】RDS for MySQLを構築しEC2からアクセスしてみる
+https://dev.classmethod.jp/articles/sales-rds-ec2-session/
+
 -------Security Group--------
 * サブネット単位で設定しない！！！
 * あくまでインスタンス単位で設定を行う
