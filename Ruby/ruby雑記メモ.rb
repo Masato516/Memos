@@ -1,3 +1,34 @@
+
+
+
+##############################################
+num_of_item = gets.chomp.to_i
+
+stand_out_points = gets.chomp.split().map( &:to_i )
+
+count = 0
+
+items_lines = stand_out_points.permutation(num_of_item).to_a
+
+items_lines.each do |items_line|
+  
+  i = 0
+  bad_count = 0
+  while i < (num_of_item - 2)
+    if items_line[i] > items_line[i + 1]
+      bad_count += 1
+    end
+    i += 1
+  end
+
+  if bad_count < 2
+    count += 1
+  end
+end
+
+puts count
+#############################################
+
 # 4点
 num_of_steps = gets.chomp.to_i
 
