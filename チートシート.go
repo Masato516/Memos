@@ -176,7 +176,98 @@ var address *int = &memory //=> 0xc0000a0a0
 
 
 
+/*
+  Structs(構造体)
+  他の言語のクラスと似たような役割を持つ
+*/
 
+//// 構造体の定義
+type Person struct {
+    firstName string 
+    age       int
+ }
+
+//// 構造体の初期化
+
+// ①変数定義後にフィールドを設定する方法
+type Person struct {
+    firstName string 
+    age int
+}
+ 
+func main(){
+    var mike Person
+    mike.firstName = "Mike"
+    mike.age = 20
+    fmt.Println(mike.firstName, mike.age) //=> Mike 20
+}
+
+// ②{} で順番にフィールドの値を渡す方法
+type Person struct {
+    firstName string 
+    age int
+ }
+ 
+func main(){
+    bob := Person{"Bob", 30}
+    fmt.Println(bob.firstName, bob.age) //=>Bob 30
+}
+
+// ③フィールド名を ： で指定する方法
+type Person struct {
+    firstName string 
+    age int
+ }
+ 
+func main(){
+    sam := Person{age: 15, firstName: "Sam"}
+    fmt.Println(sam.firstName, sam.age) //=>Sam 15
+}
+
+
+// 初期化関数を作成することで初期化することも一般的
+// 他言語の「クラスを new してコンストラクタを呼び出す」のようなもの
+
+// 例１
+type Person struct {
+    firstName string 
+    age int
+ }
+ 
+func newPerson(firstName string, age int) *Person{
+    person := new(Person)
+    person.firstName = firstName
+    person.age = age
+    return person
+}
+ 
+func main(){
+    var jen *Person = newPerson("Jennifer", 40)
+    fmt.Println(jen.firstName, jen.age) //=>Jennifer 40
+}
+
+
+// 例２
+type Profile struct {
+    Name string
+    Age  int
+}
+
+func New(name string, age int) *Profile {
+    return &Profile{
+        Name: name,
+        Age:  age,
+    }
+}
+
+func (p Profile) Print() {
+    println("name:", p.Name, ", age:", p.Age)
+}
+
+func main() {
+    p := New("Tanaka", 31)
+    p.Print()
+}
 
 
 /*
