@@ -65,6 +65,99 @@ func add(a int) (result int) {
 
 
 /*
+  可変長引数（Variadic parameter）
+*/
+
+// 引数に型名を指定する時に、「…」を前につけることで関数を宣言
+func 関数名(引数名 ...型名) 型名 {
+	// 処理コード
+}
+
+// 例.
+func sum(n ...int) int {
+	total := 0
+	for _, v := range n {
+		total += v
+	}
+	return total
+}
+x := sum(1, 2, 3, 4, 5)
+fmt.Println(x) //=> 15
+
+
+
+/*
+  クロージャ（Clousure）
+*/
+
+// 例1.
+func incrementGenerator() (func() int) {
+	i := 0
+	return func() int {
+		i++
+		return i
+	}
+}
+
+func main() {
+	counter := incrementGenerator()
+	// i=1
+	fmt.Println(counter()) //=> 1
+	// i=2
+	fmt.Println(counter()) //=> 2
+	// i=3
+	fmt.Println(counter()) //=> 3
+}
+
+// 例2.
+func counterGenerator() func() int {
+	var i int
+	return func() int {
+		i++
+		return i
+	}
+}
+
+func main() {
+	couter1 := counterGenerator()
+	fmt.Println(couter1()) //=> 1
+	fmt.Println(couter1()) //=> 2
+	fmt.Println(couter1()) //=> 3
+	
+	counter2 := counterGenerator()
+	fmt.Println(counter2()) //=> 1
+	fmt.Println(counter2()) //=> 2
+	fmt.Println(counter2()) //=> 3
+}
+
+
+// 例3. πの値を変更して、計算できる
+func circleArea(pi float64) func(radius float64) float64 {
+	return func(radius float64) float64 {
+		return pi * radius * radius
+	}
+}
+
+func main() {
+	// π = 3.14 で計算
+	c1 := circleArea(3.14)
+	// 半径 2 の円の面積を計算
+	fmt.Println(c1(2)) //=> 12.56
+	// 半径 3 の円の面積を計算
+	fmt.Println(c1(3)) //=> 28.2599999...
+
+	// π = 3 で計算
+	c2 := circleArea(3)
+	// 半径 2 の円の面積を計算
+	fmt.Println(c2(2)) //=> 12
+	// 半径 3 の円の面積を計算
+	fmt.Println(c2(3)) //=> 27
+}
+
+
+
+
+/*
   配列の定義
 */
 // Goの Arrays(配列) は固定長の的な配列で
@@ -374,6 +467,8 @@ for _, fighter := range slice {
     fmt.Println(fighter)
 }
 
+
+
 /*
   標準入力
 */
@@ -493,6 +588,8 @@ func main() {
         fmt.Println(i)
     }
 }
+
+
 
 
 /*
