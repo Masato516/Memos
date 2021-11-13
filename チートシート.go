@@ -1,5 +1,9 @@
 /* 
-  関数の定義 
+  関数の定義
+
+  キャメルケースで命名
+  packageの外で利用する関数：   アッパーキャメルケース（先頭大文字から始まる）
+  packageの内のみで利用する関数：ローワーキャメルケース（先頭小文字から始まる）
 */
 
 func 関数名 (引数 型)　{
@@ -179,6 +183,10 @@ var address *int = &memory //=> 0xc0000a0a0
 /*
   Structs(構造体)
   他の言語のクラスと似たような役割を持つ
+
+  キャメルケースで命名
+  packageの外で利用する関数：   アッパーキャメルケース（先頭大文字から始まる）
+  packageの内のみで利用する関数：ローワーキャメルケース（先頭小文字から始まる）
 */
 
 //// 構造体の定義
@@ -189,7 +197,7 @@ type Person struct {
 
 //// 構造体の初期化
 
-// ①変数定義後にフィールドを設定する方法
+// 1. 変数定義後にフィールドを設定する方法
 type Person struct {
     firstName string 
     age int
@@ -202,7 +210,7 @@ func main(){
     fmt.Println(mike.firstName, mike.age) //=> Mike 20
 }
 
-// ②{} で順番にフィールドの値を渡す方法
+// 2. {} で順番にフィールドの値を渡す方法
 type Person struct {
     firstName string 
     age int
@@ -213,7 +221,7 @@ func main(){
     fmt.Println(bob.firstName, bob.age) //=>Bob 30
 }
 
-// ③フィールド名を ： で指定する方法
+// 3. フィールド名を ： で指定する方法
 type Person struct {
     firstName string 
     age int
@@ -228,7 +236,7 @@ func main(){
 // 初期化関数を作成することで初期化することも一般的
 // 他言語の「クラスを new してコンストラクタを呼び出す」のようなもの
 
-// 例１
+// 例１.
 type Person struct {
     firstName string 
     age int
@@ -247,7 +255,7 @@ func main(){
 }
 
 
-// 例２
+// 例２.
 type Profile struct {
     Name string
     Age  int
@@ -269,6 +277,102 @@ func main() {
     p.Print()
 }
 
+
+
+
+/*
+  Maps(連想配列)
+*/
+
+// Maps(連想配列)の初期値を指定しない場合、変数は nil (nil マップ) に初期化される
+// nil マップ は要素を格納することができず、要素を格納する場合はマップの初期化を行う必要がある
+
+
+// 1. 組み込み関数make()を利用して宣言
+make(map[キーの型]値の型, キャパシティの初期値)
+// キャパシティの初期値は、省略も可能
+make(map[キーの型]値の型)
+
+
+// 2. 初期値を指定して宣言
+// 組み込み関数 make() を使用せずとも
+// 以下の様に初期値を指定して宣言可能
+var 変数名 map[key]value = map[key]value{key1: value1, key2: value2, ..., keyN: valueN}
+// 例.
+var mapEx = map[string]string{"firstName":"Khabib", "lastName": "Nurmagomedov"}
+//=> map[lastName:Khabib firstName:Nurmagomedov]
+
+
+// nilマップ
+// Maps(連想配列)の初期値を指定しない場合、変数は nil (nil マップ) に初期化される
+// nil マップ は要素を格納することができず、要素を格納する場合はマップの初期化を行う必要がある
+var romero map[string]int
+romero["age"] = "40" //=> panic: assignment to entry in nil map
+
+
+
+/*
+  Range
+*/
+
+// Slices(スライス) や、Maps(マップ) をひとつずつ反復処理するために利用
+
+// Go では range を使うと簡単に反復処理可能
+for i := 0; i < len(slice); i++{
+    fmt.Println(i, slice[i])
+    //=> 0 Khabib
+    //=> 1 Mcgregor
+    //=> 2 Poirier
+}
+// ↑ と同じ
+for index, value := range slice(スライス・Maps名) {
+    fmt.Println(index, value)
+    //=> 0 Khabib
+    //=> 1 Mcgregor
+    //=> 2 Poirier
+}
+
+
+
+/*
+  break
+  for ループを途中で止める
+*/
+
+
+/*
+  continue
+  continue以降の処理をスキップして次のループに進む
+*/
+
+// 
+var slice = []string{"Khabib", "Mcgregor", "Poirier"}
+
+for _, fighter := range slice {
+    if "Khabib" == fighter {
+        fmt.Println("Retire")
+        continue
+    }
+    fmt.Println("active")
+    fmt.Println(fighter)
+}
+//=> Retire
+//=> active
+//=> Mcgregor
+//=> active
+//=> Poirier
+
+
+var slice = []string{"Khabib", "Mcgregor", "Poirier"}
+
+for _, fighter := range slice {
+    if "Khabib" == fighter {
+        fmt.Println("Retire")
+        continue
+    }
+    fmt.Println("active")
+    fmt.Println(fighter)
+}
 
 /*
   標準入力
@@ -389,3 +493,12 @@ func main() {
         fmt.Println(i)
     }
 }
+
+
+/*
+  出力
+*/
+
+// 要素数と容量（スライスと配列のみ：mapには使えない！）
+test := []int{1, 2, 3}
+fmt.Printf("len=%d, cap=%d\n", len(test), cap(test))
