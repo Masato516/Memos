@@ -155,6 +155,25 @@ func main() {
 }
 
 
+/*
+  switch
+*/
+switch(条件){
+　　case 値:
+　　　 処理
+   ・・・
+　　default:
+　　　 処理
+}
+// 例.
+switch os {
+case "mac":
+    fmt.Println("mac")
+case "windows":
+    fmt.Println("windows")
+default:
+    fmt.Println("other")
+}
 
 
 /*
