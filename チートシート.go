@@ -165,14 +165,41 @@ switch(条件){
 　　default:
 　　　 処理
 }
-// 例.
-switch os {
-case "mac":
-    fmt.Println("mac")
-case "windows":
-    fmt.Println("windows")
-default:
-    fmt.Println("other")
+
+// 例1.
+a := "2"
+switch a {
+    case "1":
+        fmt.Println("1つめ")
+    case "2":
+        fmt.Println("2つめ") // 2つめが出力される
+    default:
+        fmt.Println("3つめ")
+}
+
+// 例2.
+// 処理を続けて実行する(フォールスルー)
+a := "1"
+switch a {
+    case "1":
+        fmt.Println("1つめ")
+        fallthrough
+    case "2":
+        fmt.Println("2つめ") // 2つめが出力される
+    default:
+        fmt.Println("3つめ")
+}
+
+// 例3.
+// caseの後に条件を追加する
+i := 1
+switch {
+    case i < 5:
+        fmt.Println("1つめ")
+    case i < 10:
+        fmt.Println("2つめ") // 2つめが出力される
+    default:
+        fmt.Println("1つめ")
 }
 
 
