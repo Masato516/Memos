@@ -203,6 +203,56 @@ switch {
 }
 
 
+
+/*
+    defer
+    関数の最後に実行される
+*/
+
+func hoge() {
+	defer fmt.Println("遅延実行されている")
+	fmt.Println("Hello World")
+}
+
+func main() {
+	hoge()
+}
+
+// 例.
+func main() {
+	fmt.Println("run")
+	defer fmt.Println("1st")
+	defer fmt.Println("2nd")
+	defer fmt.Println("3rd")
+}
+//=> run
+//=> 3rd
+//=> 2nd
+//=> 1st
+
+
+
+/*
+  logging
+  ログ出力
+  Go言語は最低限のログ出力を行う部分しか提供していない
+  =>サードパーティのロギングツールを使用することで、ログ出力を拡張できる
+*/
+// 例.
+import "log"
+
+func main() {
+    log.Println("ログ出力")
+    //=> 2021/11/14 00:49:15 ログ出力
+    log.Printf("%T %v", "ログ出力", "ログ出力")
+    //=> 2021/11/14 00:49:15 ログ出力
+    log.Fatalln("ログ出力")
+    //=> 2021/11/14 00:50:44 ログ出力
+    //=> exit status 1  処理が終了する！
+}
+
+
+
 /*
   配列の定義
 */
