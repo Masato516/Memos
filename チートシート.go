@@ -1,9 +1,8 @@
 /* 
-  関数の定義
-
-  キャメルケースで命名
-  packageの外で利用する関数：   アッパーキャメルケース（先頭大文字から始まる）
-  packageの内のみで利用する関数：ローワーキャメルケース（先頭小文字から始まる）
+    関数の定義
+    キャメルケースで命名
+    packageの外で利用する関数：   アッパーキャメルケース（先頭大文字から始まる）
+    packageの内のみで利用する関数：ローワーキャメルケース（先頭小文字から始まる）
 */
 
 func 関数名 (引数 型)　{
@@ -65,7 +64,7 @@ func add(a int) (result int) {
 
 
 /*
-  可変長引数（Variadic parameter）
+    可変長引数（Variadic parameter）
 */
 
 // 引数に型名を指定する時に、「…」を前につけることで関数を宣言
@@ -87,7 +86,7 @@ fmt.Println(x) //=> 15
 
 
 /*
-  クロージャ（Clousure）
+    クロージャ（Clousure）
 */
 
 // 例1.
@@ -156,7 +155,7 @@ func main() {
 
 
 /*
-  switch
+    switch
 */
 switch(条件){
 　　case 値:
@@ -233,10 +232,10 @@ func main() {
 
 
 /*
-  logging
-  ログ出力
-  Go言語は最低限のログ出力を行う部分しか提供していない
-  =>サードパーティのロギングツールを使用することで、ログ出力を拡張できる
+    logging
+    ログ出力
+    Go言語は最低限のログ出力を行う部分しか提供していない
+    =>サードパーティのロギングツールを使用することで、ログ出力を拡張できる
 */
 // 例.
 import "log"
@@ -251,10 +250,80 @@ func main() {
     //=> exit status 1  処理が終了する！
 }
 
+// 実用例.
+// ログファイルを指定して出力する
+func LoggingSettings(logFile string) {
+	// ログファイルを作成
+	logfile, _ := os.OpenFile(logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	// ログファイルを標準出力に結びつける
+	// os.Stdout と logfile から新しい io.Writer を生成
+	multiLogFile := io.MultiWriter(os.Stdout, logfile)
+	// ログのフラグを設定
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+	//=> 2021/11/14 21:20:39 go_paractice.go:26:
+	// ログの出力先を設定
+	log.SetOutput(multiLogFile)
+}
+
+func main() {
+	// ログファイル名を指定
+	LoggingSettings("log.txt")
+	// 存在しないファイルを指定した場合はエラーになる
+	_, err := os.Open("no-file.txt")
+	if err != nil {
+		// エラーが発生した場合はログに出力して終了
+		log.Fatalln("Error:", err)
+	}
+	fmt.Println("ファイルの読み込み成功")
+}
+
 
 
 /*
-  配列の定義
+    エラーハンドリング
+*/
+
+func main() {
+	// ファイルを開く
+	file, err := os.Open("./go_paractice.go")
+	if err != nil {
+		log.Fatalln("Error!")
+	}
+	// 処理の最後にファイルを閉じる
+	defer file.Close()
+
+	data := make([]byte, 100)
+	// os.Openでファイルのオープンで取得したos.Fileオブジェクトの
+	// Readメソッドを使用して読み込みを行
+	count, err := file.Read(data)
+	if err != nil {
+		log.Fatalln("Error!")
+	}
+	fmt.Println(count, string(data))
+	// 返り値が１つの場合は、エラーハンドリングを１行で書くことがある
+	if err = os.Chdir("/usr/local"); err != nil {
+		log.Fatalln("Error!")
+	}
+}
+
+
+/*
+    byte型（バイト）
+*/
+
+func main() {
+	//バイト型の配列を宣言
+	b := []byte{72, 73}
+	fmt.Println(b)
+	// 配列の値をASCIIコードとして文字列に変換
+	fmt.Println(string(b))
+	//=> HI
+}
+
+
+
+/*
+    配列の定義
 */
 // Goの Arrays(配列) は固定長の的な配列で
 // 最初に宣言した配列のサイズを変えられない
@@ -275,6 +344,7 @@ arr[2] = "Ruby"             //=> エラー invalid array index 2 (out of bounds 
 var arr[2] string = [2]string {"Golang", "Java"} //=> [Golange Java]
 fmt.Println(arr[0], arr[1]) //=> Golange Java
 
+
 // バージョン3
 // 変数名 := [...]型{初期値１, 初期値n}
 arr := [...] string{"Golang", "Java"} //=> [Golange Java]
@@ -282,7 +352,7 @@ fmt.Println(arr[0], arr[1]) //=> Golange Java
 
 
 /*
-  Slices(スライス)
+    Slices(スライス)
 */
 // 配列の宣言と異なり、[ ]の中に大きさを指定しない
 // スライスは参照型
@@ -348,7 +418,7 @@ test2 := test[:2:3] //=> [1 2] len=2, cap=3
 
 
 /*
-  ポインタ
+    ポインタ
 */
 // メモリのアドレス情報のこと
 
@@ -370,12 +440,12 @@ var address *int = &memory //=> 0xc0000a0a0
 
 
 /*
-  Structs(構造体)
-  他の言語のクラスと似たような役割を持つ
+    Structs(構造体)
+    他の言語のクラスと似たような役割を持つ
 
-  キャメルケースで命名
-  packageの外で利用する関数：   アッパーキャメルケース（先頭大文字から始まる）
-  packageの内のみで利用する関数：ローワーキャメルケース（先頭小文字から始まる）
+    キャメルケースで命名
+    packageの外で利用する関数：   アッパーキャメルケース（先頭大文字から始まる）
+    packageの内のみで利用する関数：ローワーキャメルケース（先頭小文字から始まる）
 */
 
 //// 構造体の定義
@@ -470,7 +540,7 @@ func main() {
 
 
 /*
-  Maps(連想配列)
+    Maps(連想配列)
 */
 
 // Maps(連想配列)の初期値を指定しない場合、変数は nil (nil マップ) に初期化される
@@ -501,7 +571,7 @@ romero["age"] = "40" //=> panic: assignment to entry in nil map
 
 
 /*
-  Range
+    Range
 */
 
 // Slices(スライス) や、Maps(マップ) をひとつずつ反復処理するために利用
@@ -524,14 +594,14 @@ for index, value := range slice(スライス・Maps名) {
 
 
 /*
-  break
-  for ループを途中で止める
+    break
+    for ループを途中で止める
 */
 
 
 /*
-  continue
-  continue以降の処理をスキップして次のループに進む
+    continue
+    continue以降の処理をスキップして次のループに進む
 */
 
 // 
@@ -566,7 +636,7 @@ for _, fighter := range slice {
 
 
 /*
-  標準入力
+    標準入力
 */
 
 // fmt.Scan で軽快に読み込む
@@ -689,9 +759,11 @@ func main() {
 
 
 /*
-  出力
+    出力
 */
 
 // 要素数と容量（スライスと配列のみ：mapには使えない！）
 test := []int{1, 2, 3}
 fmt.Printf("len=%d, cap=%d\n", len(test), cap(test))
+//=> len=3, cap=3
+fmt.Println(test)
