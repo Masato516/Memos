@@ -155,6 +155,40 @@ func main() {
 
 
 /*
+    Interface(インターフェース)
+    メソッドの型だけを定義した型
+    オブジェクト指向言語でいうところのポリモーフィズムと同様の機能を実現する
+*/
+
+type Human interface {
+	// メソッド名のみを指定
+	say() // say()というメソッドを持っていないとエラーになる
+}
+
+// Personというstructを定義
+type Person struct {
+	name string
+}
+
+// Personに対してsay()を実装
+// Personにsay()が実装されていいないと以下のエラーを出す
+//=> cannot use Person{...} (type Person) as type Human in assignment:
+Person does not implement Human (missing say method)
+func (p Person) say() {
+	fmt.Println(p.name)
+}
+
+func main() {
+	// HumanというインターフェースにPersonのstructを入れる
+	//=> say()というメソッドを持っていないとエラーになる
+	var mike Human = Person{"Mike"}
+	mike.say()
+}
+
+
+
+
+/*
     switch
 */
 switch(条件){
@@ -767,3 +801,43 @@ test := []int{1, 2, 3}
 fmt.Printf("len=%d, cap=%d\n", len(test), cap(test))
 //=> len=3, cap=3
 fmt.Println(test)
+
+
+
+
+/*
+    ファイルの開閉
+    ファイル読み書きの際のファイルの開き方にいくつか方法がある
+*/
+
+/* ・os.OpenFile */
+// 基本的に何も考えずファイルを開いて書き込むと中身を全部上書きして書き込まれる
+// 第二引数に、用途に合わせてフラグを渡す必要がある
+
+// ファイルに追記する時
+// 第二引数に os.O_WRONLY 及び os.O_APPEND をつける
+file, err := os.OpenFile("test.txt", os.O_WRONLY|os.O_APPEND, 0666)
+
+// ファイルが存在しなかった場合、新規作成
+// 第二引数に os.O_CREATE をつける
+file, err := os.OpenFile("test.txt", os.O_WRONLY|os.O_CREATE, 0666)
+
+// ファイルに追記する、存在しなかったら新規作成
+//os.O_RDWRを渡しているので、同時に読み込みも可能
+file, err := os.OpenFile("test.txt", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+
+// 引数
+// os.O_RDONLY //読み込む時
+// os.O_WRONLY //書き込む時
+// os.O_RDWR //読み書き両方する時
+
+
+/* os.Create */
+// ファイルへ何かを書き出す
+// 指定したファイルが存在してもエラーを返さず作成し、元のファイルの内容は削除される
+
+/* os.NewFile */
+// ファイルを作成
+
+/* ・os.Open */
+// ファイルを開く時に使う(読み込み専用:編集不可)
