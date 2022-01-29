@@ -1,9 +1,5 @@
 package main
 
-import (
-	"fmt"
-)
-
 type Vertex struct {
 	X int
 	Y int
@@ -11,6 +7,7 @@ type Vertex struct {
 }
 
 func main() {
+	/* 色々な struct宣言方法
 	v := Vertex{X: 1, Y: 2}
 	fmt.Println(v)
 	fmt.Println(v.X, v.Y)
@@ -35,4 +32,5 @@ func main() {
 
 	v7 := &Vertex{}
 	fmt.Printf("%T %v\n", v7, v7)
+	*/
 }
