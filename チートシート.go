@@ -173,7 +173,7 @@ type Person struct {
 // Personに対してsay()を実装
 // Personにsay()が実装されていいないと以下のエラーを出す
 //=> cannot use Person{...} (type Person) as type Human in assignment:
-Person does not implement Human (missing say method)
+//=> Person does not implement Human (missing say method)
 func (p Person) say() {
 	fmt.Println(p.name)
 }
