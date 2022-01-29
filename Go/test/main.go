@@ -1,12 +1,31 @@
 package main
 
+import "fmt"
+
 type Vertex struct {
 	X int
 	Y int
 	S string
 }
 
+func changeVertex(v Vertex) {
+	v.X = 100
+}
+
+func changeVertex2(v *Vertex) {
+	v.X = 10000    // ここでは v.X は Vertex構体の Xフィールドにアクセスする(ポインターにはアクセスしない)
+	(*v).X = 10000 // 本来あるべき書方
+}
+
 func main() {
+	v := Vertex{1, 2, "test"}
+	changeVertex(v)
+	fmt.Println(v)
+
+	v2 := &Vertex{1, 2, "test"}
+	changeVertex2(v2)
+	fmt.Println(v2)
+
 	/* 色々な struct宣言方法
 	v := Vertex{X: 1, Y: 2}
 	fmt.Println(v)
