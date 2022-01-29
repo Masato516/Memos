@@ -1,0 +1,66 @@
+・Rails初心者とバレる書き方
+「4.の権限昇格のコード例にあるこの書き方↓、ログインしないとできないはずの操作の中でこれ書いたらコードレビューで100%ツッコまれる」
+「そういう状況ではidで直接findしてはいけない」
+「リレーションがあるならそれを使えと: 反論の余地なし」
+「職務質問もの:female-police-officer::skin-tone-3:」
+# 同記事より
+Project.find(params[:id])               # あかん書き方
+
+current_user.projects.find(params[:id]) # たとえばこんなふうに書くべき
+https://techracho.bpsinc.jp/hachi8833/2018_10_15/63062
+
+
+
+
+whenever(cron依存)のDockerでの利用について
+以前はバッチ処理の登録をcrontab + wheneverを用いて行っていました。
+しかし、それだと１つのサーバーが落ちた際にそのサーバーのcrontabに登録されているバッチ処理が
+全て動かなくなってしまうという問題があり、そこが単一障害点となってしまっていました。
+単一障害点を取り除く
+ECSのSchedulerを用いることで、
+落ちたサーバーのバッチ処理を他のサーバーに割り振ることが出来ます。
+そのため、あるサーバーが落ちてしまっても他のサーバーで補うことが出来ます。
+https://www.wantedly.com/companies/feedforce/post_articles/59811
+他のgemの採用
+https://tech.medpeer.co.jp/entry/2017/02/06/045738
+cronに依存するwheneverはdockerでは使いにくい
+cron専用のコンテナを作ったり、delayed_job_active_recordという
+バックグラウンドジョブを扱うgemを入れたりがあるようですが、、、
+個人的にはこれらは複雑になりすぎてる気がしました。
+https://yoji4910.hatenablog.com/entry/2020/02/24/231804
+(Lancersブログ)
+バッチは元々Railsのwheneverを入れて、schedule.rbファイルで管理していましたが、 
+ECS Scheduled Tasksを使って実装しました。
+https://engineer.blog.lancers.jp/2020/05/ecs-fargate-replace/
+小さなRailsアプリケーションのちょっとしたバッチをcronで書くのは何も問題ありません。
+むしろスモールスタートとしてはよいでしょう。
+しかしながら、ちょっとずつバッチが追加された結果、
+当時のCrowdWorksには80個ぐらいのバッチが元気にcronで動いており、
+どのバッチが成功/失敗しているのか管理しづらい状況でした。
+またcronの定義の管理には whenever というgemを使って、 
+Capistrano でデプロイするタイミングでcrontabを生成していました。
+これはRailsアプリケーションのリポジトリでジョブスケジュールが管理できるので、
+便利である反面Docker化するときにちょっと面倒なことになります。
+というのもcronは複数プロセスがバックグラウンドで動くアーキテクチャであり、
+Dockerは1プロセスがフォアグラウンドで動くアーキテクチャなので、
+crondをDockerコンテナの中ではなく外で動かすことになります。
+つまりこれはcrontabの定義がコンテナの外に必要になります。
+(クラウドワークス ブログ)
+https://engineer.crowdworks.jp/entry/2019/10/02/160900
+
+
+
+
+
+## 定期的なバッチ実行
+
+Lambda 内でcron作成し、定期実行
+https://qiita.com/nsuhara/items/0d36600511fc162827f6
+
+
+Lambda と Cloud Watch Events
+
+GCF + Cloud Scheduler
+https://qiita.com/niwasawa/items/90476112dfced169c113
+
+Google Apps Scripts
