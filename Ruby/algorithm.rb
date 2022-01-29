@@ -1,3 +1,35 @@
+## バブルソート
+# https://onlinejudge.u-aizu.ac.jp/courses/lesson/1/ALDS1/2/ALDS1_2_A
+
+class Array
+  def swap!(a, b)
+    self[a], self[b] = self[b], self[a]
+
+    self
+  end
+end
+
+num = gets.chomp.to_i
+arr = gets.chomp.split().map( &:to_i )
+
+count = 0
+step = num - 1
+
+while step > 0
+  step.times do |swap_index|
+    if arr[-2 - swap_index] > arr[-1 - swap_index]
+      arr.swap!(-2 - swap_index, -1 - swap_index)
+      count += 1
+    end
+  end
+  step -= 1
+end
+
+puts arr.join(" ")
+puts count
+
+
+
 ## 最大の利益
 n    = gets.to_i  # 与えられる数値の数
 minv = gets.to_i  # １つ目の数値を代入
