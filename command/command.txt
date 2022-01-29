@@ -1307,3 +1307,94 @@ https://www.synergy-marketing.co.jp/blog/using_recaptcha_on_form
 
 
 
+-----------------DNS関連------------------
+名前解決をするコマンド
+## nslookup
+
+例.
+$ nslookup google.com
+Server:     172.28.xxx.xxx
+Address:    172.28.xxx.xxx#53
+
+Non-authoritative answer:
+Name:   google.com
+Address: 172.217.25.110
+
+## host
+hostを使うとnslookupよりも簡潔な情報を得ることができる
+
+例.
+$ host google.com
+google.com has address 172.217.26.46
+google.com has IPv6 address 2404:6800:4004:80d::200e
+google.com mail is handled by 30 alt2.aspmx.l.google.com.
+google.com mail is handled by 40 alt3.aspmx.l.google.com.
+google.com mail is handled by 20 alt1.aspmx.l.google.com.
+google.com mail is handled by 10 aspmx.l.google.com.
+google.com mail is handled by 50 alt4.aspmx.l.google.com.
+
+
+## dig
+ドメインに関する詳細な情報を知ることができる
+
+例.
+$ dig aws.amazon.com
+
+; <<>> DiG 9.10.6 <<>> aws.amazon.com
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 20698
+;; flags: qr rd ra; QUERY: 1, ANSWER: 3, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4000
+;; QUESTION SECTION:
+;aws.amazon.com.            IN  A
+
+;; ANSWER SECTION:
+aws.amazon.com.     12  IN  CNAME   1.aws-lbr.amazonaws.com.
+1.aws-lbr.amazonaws.com. 50 IN  CNAME   aws-us-west-2.amazon.com.
+aws-us-west-2.amazon.com. 44    IN  A   52.119.168.190
+
+;; Query time: 9 msec
+;; SERVER: 172.28.xxx.xxx#53(172.28.xxx.xxx)
+;; WHEN: Mon Dec 10 17:24:28 JST 2018
+;; MSG SIZE  rcvd: 121
+
+
+### ネットワーク疎通確認コマンド
+
+## ping
+pingはネットワークの接続経路が接続されているかを確認するコマンドです。
+ただし、AWSでpingを使う場合はデフォルトでは疎通しないため注意
+（セキュリティグループ？をいじる必要あり）
+
+例.
+$ ping google.com
+PING google.com (172.217.26.46) 56(84) bytes of data.
+64 bytes from nrt12s17-in-f14.1e100.net (172.217.26.46): icmp_seq=1 ttl=39 time=5.28 ms
+64 bytes from nrt12s17-in-f14.1e100.net (172.217.26.46): icmp_seq=2 ttl=39 time=5.08 ms
+64 bytes from nrt12s17-in-f14.1e100.net (172.217.26.46): icmp_seq=3 ttl=39 time=5.05 ms
+
+
+## traceroute
+tracerouteをLinuxで使う場合、デフォルトのプロトコルはUDPです。
+最後に宛先にたどり着いて処理が終了すれば疎通確認が取れていることがわかる
+
+例.
+traceroute google.com
+traceroute to google.com (216.58.197.142), 64 hops max, 52 byte packets
+ 1  10.33.23.254 (10.33.23.254)  3.929 ms  3.392 ms  2.997 ms
+ 2  10.33.91.254 (10.33.91.254)  74.841 ms  74.608 ms  68.587 ms
+ 3  10.33.91.222 (10.33.91.222)  67.503 ms  75.631 ms  76.663 ms
+ 4  192.168.3.4 (192.168.3.4)  71.895 ms  84.070 ms  78.555 ms
+ 5  192.168.2.1 (192.168.2.1)  74.489 ms  61.916 ms  63.660 ms
+ 6  158.205.127.1 (158.205.127.1)  95.288 ms  65.370 ms  61.405 ms
+ 7  158.205.188.229 (158.205.188.229)  70.257 ms  50.754 ms  55.554 ms
+ 8  158.205.192.105 (158.205.192.105)  57.842 ms  58.442 ms  55.389 ms
+ 9  as15169.ix.jpix.ad.jp (210.171.224.96)  57.065 ms  62.574 ms  60.141 ms
+10  108.170.242.97 (108.170.242.97)  62.677 ms
+    108.170.242.129 (108.170.242.129)  71.308 ms
+    108.170.242.97 (108.170.242.97)  69.742 ms
+11  216.239.62.25 (216.239.62.25)  69.914 ms  6.564 ms  68.025 ms
+12  nrt12s01-in-f142.1e100.net (216.58.197.142)  64.729 ms  58.575 ms  64.304 ms
