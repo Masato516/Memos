@@ -347,3 +347,73 @@ func main() {
 // "
 
 
+
+type Page struct {
+	Title string
+	Body  []byte
+}
+
+// Page構造体に対してsaveメソッドを定義してる
+func (p *Page) save() error {
+	filename := p.Title + ".txt"
+	return ioutil.WriteFile(filename, p.Body, 0600)
+}
+
+// string型の引数を取り、Pageのポインタを返す関数
+func loadPage(title string) (*Page, error) {
+	filename := title + ".txt"
+	body, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	// ポインタで返す
+	return &Page{Title: "test", Body: body}, nil
+}
+
+func main() {
+	// ファイルを作成・保存
+	p1 := &Page{Title: "test", Body: []byte("This is a sample Page.")}
+	p1.save()
+	// ファイルを読み込む
+	p2, _ := loadPage(p1.Title)
+	fmt.Println(string(p2.Body))
+}
+
+
+
+
+// section9-76
+type Page struct {
+	Title string
+	Body  []byte
+}
+
+// Page構造体に対してsaveメソッドを定義してる
+func (p *Page) save() error {
+	filename := p.Title + ".txt"
+	return ioutil.WriteFile(filename, p.Body, 0600)
+}
+
+// string型の引数を取り、Pageのポインタを返す関数
+func loadPage(title string) (*Page, error) {
+	filename := title + ".txt"
+	body, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	// ポインタで返す
+	return &Page{Title: "test", Body: body}, nil
+}
+
+func viewHandler(w http.ResponseWriter, r *http.Request) {
+	title := r.URL.Path[len("/view/"):]
+	p, _ := loadPage(title)
+	fmt.Fprintf(w, "<h1>%s</h1><div>%s</div>", p.Title, p.Body)
+}
+
+func main() {
+	// /view/~であれば、http.ListenAndServeに行く前にviewHandlerを呼び出す
+	http.HandleFunc("/view/", viewHandler)
+	// ポート8080でサーバーを起動
+	log.Fatal(http.ListenAndServe(":8080", nil))
+}
