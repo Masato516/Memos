@@ -480,6 +480,13 @@ var address *int = &memory //=> 0xc0000a0a0
     キャメルケースで命名
     packageの外で利用する関数：   アッパーキャメルケース（先頭大文字から始まる）
     packageの内のみで利用する関数：ローワーキャメルケース（先頭小文字から始まる）
+
+    type [型(構造体)の名前] struct {
+        [フィールド名] [型名]
+        [フィールド名] [型名]
+        [フィールド名] [型名]
+    }
+
 */
 
 //// 構造体の定義
@@ -626,14 +633,13 @@ func main() {
     ポイントレシーバー
 */
 
-
-// メソッド: Vertex構造体と結びつきがある
+// 値レシーバー
 func (v Vertex) Area() int {
 	return v.X * v.Y
 }
 
-// ポイントレシーバー
-func (v *Vertex) Scale(i int) {
+// ポインタレシーバー: structの中身を書き換える
+func (v *Vertex) Scale(i int) { // *がなければ、v.Area()は12になる！！
 	v.X = v.X * i
 	v.Y = v.Y * i
 }
