@@ -417,3 +417,60 @@ func main() {
 	// ポート8080でサーバーを起動
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
+
+
+
+
+// section9-77
+type Page struct {
+	Title string
+	Body  []byte
+}
+
+// Page構造体に対してsaveメソッドを定義してる
+func (p *Page) save() error {
+	filename := p.Title + ".txt"
+	return ioutil.WriteFile(filename, p.Body, 0600)
+}
+
+// string型の引数を取り、Pageのポインタを返す関数
+func loadPage(title string) (*Page, error) {
+	filename := title + ".txt"
+	body, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	// ポインタで返す
+	return &Page{Title: "test", Body: body}, nil
+}
+
+// テンプレートを描画する関数
+func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
+	t, _ := template.ParseFiles(tmpl + ".html")
+	t.Execute(w, p)
+}
+
+// view.htmlにview/以下のページ名を渡す
+func viewHandler(w http.ResponseWriter, r *http.Request) {
+	title := r.URL.Path[len("/view/"):]
+	p, _ := loadPage(title)
+	renderTemplate(w, "view", p)
+}
+
+// edit.htmlにedit/以下のページ名を渡す
+func editHandler(w http.ResponseWriter, r *http.Request) {
+	title := r.URL.Path[len("/edit/"):]
+	p, err := loadPage(title)
+	if err != nil {
+		p = &Page{Title: title}
+	}
+	renderTemplate(w, "edit", p)
+}
+
+func main() {
+	// /view/~であれば、http.ListenAndServeに行く前にviewHandlerを呼び出す
+	http.HandleFunc("/view/", viewHandler)
+	http.HandleFunc("/edit/", editHandler)
+	// ポート8080でサーバーを起動
+	log.Fatal(http.ListenAndServe(":8080", nil))
+}
