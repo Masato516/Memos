@@ -536,6 +536,7 @@ func main(){
 // 初期化関数を作成することで初期化することも一般的
 // 他言語の「クラスを new してコンストラクタを呼び出す」のようなもの
 
+
 // 例１.
 type Person struct {
     firstName string 
@@ -919,3 +920,60 @@ file, err := os.OpenFile("test.txt", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 
 /* ・os.Open */
 // ファイルを開く時に使う(読み込み専用:編集不可)
+
+
+
+/* テンプレート */
+// テキスト出力を生成するためのデータ駆動型テンプレートを実装している
+
+// Go 言語には、組込みのテンプレート・パッケージとして、
+// text/template と html/template パッケージが搭載されている 
+// Web ページの構築に使用する場合は、
+// パラメータを HTML エスケープ処理してくれる 
+// html/template パッケージの方を利用する
+
+// // Template オブジェクトの生成
+// テンプレート機能を使用するには、
+// まずは Template オブジェクトを生成します。 
+// テンプレートファイルを使用する場合は template.ParseFiles 関数、
+// 文字列データをテンプレートとして使用する場合は template.Parse 関数を使用
+
+t, err := template.ParseFiles("./template.html")
+if err != nil {
+	log.Fatal(err)
+}
+
+
+// テンプレートファイルのパース処理が成功することが分かっている場合は、
+// 次のように template.Must 関数を組み合わせて使用することで、
+// エラー処理の記述を省略することができます（エラーになった場合は panic が発生します）。
+
+t := template.Must(template.ParseFiles("./template.html"))
+
+
+// // テンプレートへの値の埋め込み
+// テンプレートへの値の埋め込みは、
+// Template オブジェクトの Execute メソッドによって行います。 
+// 第一引数には出力先、第二引数には埋め込むデータを渡します。
+
+data := "Hello World"
+if err := t.Execute(os.Stdout, data); err != nil {
+	log.Fatal(err)
+}
+
+// template.ParseFilesで読み込んだファイルが
+
+// ・1つのみの場合
+// ExecuteもしくはExecuteTemplateを使う
+
+// ・複数の場合
+// ExecuteTemplateを使う
+
+
+// 渡されたデータは、テンプレートファイル内の、{{ . }} という部分に展開されます。 
+// 下記はシンプルなテンプレートファイルの例です。
+
+// template.html
+<h1>{{ . }}</h1>
+// 出力結果
+<h1>Hello World</h1>
