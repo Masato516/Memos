@@ -474,3 +474,79 @@ func main() {
 	// ポート8080でサーバーを起動
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
+
+
+
+// section9-78
+type Page struct {
+	Title string
+	Body  []byte
+}
+
+// Page構造体に対してsaveメソッドを定義してる(ファイルの保存)
+func (p *Page) save() error {
+	filename := p.Title + ".txt"
+	return ioutil.WriteFile(filename, p.Body, 0600)
+}
+
+// string型の引数を取り、Pageのポインタを返す関数
+func loadPage(title string) (*Page, error) {
+	filename := title + ".txt"
+	body, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	// ポインタで返す
+	return &Page{Title: "test", Body: body}, nil
+}
+
+// テンプレートを描画する関数
+func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
+	// テンプレートファイルのパース処理
+	t, _ := template.ParseFiles(tmpl + ".html")
+	// テンプレートファイルへの値の埋め込み
+	t.Execute(w, p)
+}
+
+// view.htmlにview/以下のページ名を渡す
+func viewHandler(w http.ResponseWriter, r *http.Request) {
+	title := r.URL.Path[len("/view/"):]
+	p, _ := loadPage(title)
+	renderTemplate(w, "view", p)
+}
+
+// edit.htmlにedit/以下のページ名を渡す
+func editHandler(w http.ResponseWriter, r *http.Request) {
+	title := r.URL.Path[len("/edit/"):]
+	p, err := loadPage(title)
+	// ページが存在しない場合は、新規ページを作成するためのStructを作成
+	// エラーを返している
+	if err != nil {
+		p = &Page{Title: title}
+	}
+	renderTemplate(w, "edit", p)
+}
+
+// 保存ボタンを押した時に呼び出される関数
+func saveHandler(w http.ResponseWriter, r *http.Request) {
+	title := r.URL.Path[len("/edit/"):]
+	body := r.FormValue("body")
+	p := &Page{Title: title, Body: []byte(body)}
+	// 毎回、ファイルを上書きしてる
+	err := p.save()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	// エラーがなければ、viewHandlerにリダイレクト
+	http.Redirect(w, r, "/view/"+title, http.StatusFound)
+}
+
+func main() {
+	// /view/~であれば、http.ListenAndServeに行く前にviewHandlerを呼び出す
+	http.HandleFunc("/view/", viewHandler)
+	http.HandleFunc("/edit/", editHandler)
+	http.HandleFunc("/save/", saveHandler)
+	// ポート8080でサーバーを起動
+	log.Fatal(http.ListenAndServe(":8080", nil))
+}
