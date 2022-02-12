@@ -977,3 +977,36 @@ if err := t.Execute(os.Stdout, data); err != nil {
 <h1>{{ . }}</h1>
 // 出力結果
 <h1>Hello World</h1>
+
+
+
+/*
+    goroutine と sync.WaitoGroup
+*/
+
+import (
+	"fmt"
+	"sync"
+)
+
+func goroutine(s string, wg *sync.WaitGroup) {
+	defer wg.Done()
+	for i := 0; i < 5; i++ {
+		// time.Sleep(100 * time.Millisecond)
+		fmt.Println(s)
+	}
+}
+
+func normal(s string) {
+	for i := 0; i < 5; i++ {
+		fmt.Println(s)
+	}
+}
+
+func main() {
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go goroutine("world", &wg)
+	normal("hello")
+	wg.Wait()
+}
