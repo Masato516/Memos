@@ -17,7 +17,7 @@ func 関数名 (引数 型) 値の型 {
 }
 // 例.
 func addOne(i int) int {
-    return i + 1
+ return i + 1
 }
 
 
@@ -604,6 +604,35 @@ fmt.Printf("%T %v\n", v6, v6)
 v7 := &Vertex{}
 fmt.Printf("%T %v\n", v7, v7)
 
+
+/*
+    structの参照・値渡し
+*/
+type Vertex struct {
+	X, Y int
+	S    string
+}
+
+func changeVertexVal(v Vertex) {
+	v.X = 1000
+}
+
+func changeVertexRef(v *Vertex) {
+	v.X = 1000
+}
+
+func main() {
+	v1 := Vertex{X: 1, Y: 2, S: "値渡し"}
+	changeVertexVal(v1)
+	fmt.Println(v1)
+
+	v2 := &Vertex{X: 1, Y: 2, S: "参照渡し"}
+	changeVertexRef(v2)
+	fmt.Println(v2)
+}
+
+
+
 /*
     メソッド
 */
@@ -1010,3 +1039,9 @@ func main() {
 	normal("hello")
 	wg.Wait()
 }
+
+
+/*
+    channel
+*/
+
