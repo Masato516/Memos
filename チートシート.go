@@ -450,6 +450,23 @@ test  := []int{1, 2, 3, 4, 5, 6}
 test2 := test[:2:3] //=> [1 2] len=2, cap=3
 
 
+// capはlenと同様に増加せず、前に確保していた分ずつ確保されていく
+n := make([]int, 3, 5)
+fmt.Printf("len=%d cap=%d value=%v\n", len(n), cap(n), n)
+//=> len=3 cap=5 value=[0 0 0]
+
+n = append(n, 1, 2)
+fmt.Printf("len=%d cap=%d value=%v\n", len(n), cap(n), n)
+//=> len=3 cap=5 value=[0 0 0]
+
+n = append(n, 3, 4, 5)
+fmt.Printf("len=%d cap=%d value=%v\n", len(n), cap(n), n)
+//=> len=8 cap=10 value=[0 0 0 1 2 3 4 5]
+
+n = append(n, 6, 7, 8)
+fmt.Printf("len=%d cap=%d value=%v\n", len(n), cap(n), n
+//=> len=11 cap=20 value=[0 0 0 1 2 3 4 5 6 7 8]
+
 
 /*
     ポインタ
@@ -614,11 +631,13 @@ type Vertex struct {
 }
 
 func changeVertexVal(v Vertex) {
-	v.X = 1000
+	v.X *= 1000
 }
 
 func changeVertexRef(v *Vertex) {
-	v.X = 1000
+	// structの場合、(*v).Xと記述する必要はない
+	v.X *= 1000
+	//=> (*v).X *= 1000 と同じ挙動
 }
 
 func main() {
@@ -711,6 +730,12 @@ var romero map[string]int
 romero["age"] = "40" //=> panic: assignment to entry in nil map
 
 
+// 例.
+m := map[string]int{"apple": 100, "banana": 140}
+fmt.Println(m["apple"])
+//=> 100
+fmt.Println(m["strawberry"])
+//=> 0
 
 /*
     Range
