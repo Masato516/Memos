@@ -1044,7 +1044,7 @@ import (
 )
 
 func goroutine(s string, wg *sync.WaitGroup) {
-	defer wg.Done()
+	defer wg.Done() // 関数の処理が終われば、スレッドを終了
 	for i := 0; i < 5; i++ {
 		// time.Sleep(100 * time.Millisecond)
 		fmt.Println(s)
@@ -1070,3 +1070,74 @@ func main() {
     channel
 */
 
+func goroutine1(s []int, c chan int) {
+	sum := 0
+	for _, v := range s {
+		sum += v
+	}
+	c <- sum
+}
+
+func goroutine2(s []int, c chan int) {
+	sum := 0
+	for _, v := range s {
+		sum += v
+	}
+	c <- sum
+}
+
+func main() {
+	s1 := []int{1, 2, 3, 4, 5}
+	s2 := []int{6, 7, 8, 9, 10}
+	c := make(chan int)
+	go goroutine1(s1, c)
+	go goroutine2(s2, c)
+	x := <-c
+	fmt.Println(x)
+	y := <-c
+	fmt.Println(y)
+}
+
+
+
+/*
+    makeとnewの違い
+    makeはポインタを返さず、newはポインタを返す
+*/
+
+func main() {
+	s1 := make([]int, 0)
+	fmt.Printf("%T\n", s1)
+
+	s2 := new([]int)
+	fmt.Printf("%T\n", s2)
+
+	m1 := make(map[string]int)
+	fmt.Printf("%T\n", m1)
+
+	m2 := new(map[string]int)
+	fmt.Printf("%T\n", m2)
+
+	ch1 := make(chan int)
+	fmt.Printf("%T\n", ch1)
+
+	ch2 := new(chan int)
+	fmt.Printf("%T\n", ch2)
+
+	// makeはslice、配列、mapにしか使えない
+	var p *int = new(int)
+	fmt.Printf("%T\n", p)
+
+	var st = new(struct{})
+	fmt.Printf("%T\n", st)
+}
+
+/* 出力結果 */
+// []int
+// *[]int
+// map[string]int
+// *map[string]int
+// chan int
+// *chan int
+// *int
+// *struct {}
