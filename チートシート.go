@@ -228,7 +228,7 @@ switch a {
 i := 1
 switch {
     case i < 5:
-        fmt.Println("1つめ")
+ fmt.Println("1つめ")
     case i < 10:
         fmt.Println("2つめ") // 2つめが出力される
     default:
@@ -654,6 +654,10 @@ func main() {
 
 /*
     メソッド
+		
+		対象の型を引数に取る関数の場合は，他の関数と名前衝突を防ぐため，
+		あるいは処理の内容がわかるような名前をつける必要があるため，どうしても長い名前になる
+		=>型と紐付けられる関数はメソッドにした方がよい
 */
 
 // 関数とは異なる
@@ -662,11 +666,13 @@ type Vertex struct {
 }
 
 // メソッド: Vertex構造体と結びつきがある
+// 構造体（型）に紐づく処理の塊
 func (v Vertex) Area() int {
 	return v.X * v.Y
 }
 
 // 関数
+// funcで始まる処理の塊の中で構造体（型）に紐づけられていないもの
 func Area(v Vertex) int {
 	return v.X * v.Y
 }
@@ -1098,6 +1104,184 @@ func main() {
 	fmt.Println(y)
 }
 
+/*
+    channelとselect
+*/
+
+func goroutine1(ch chan string) {
+	for {
+		ch <- "packet from c1"
+		time.Sleep(1 * time.Second)
+	}
+}
+
+func goroutine2(ch chan string) {
+	for {
+		ch <- "packet from c2"
+		time.Sleep(1 * time.Second)
+	}
+}
+
+func main() {
+	c1 := make(chan string)
+	c2 := make(chan string)
+	go goroutine1(c1)
+	go goroutine2(c2)
+	for {
+		select {
+		case msg1 := <-c1:
+			fmt.Println(msg1)
+		case msg2 := <-c2:
+			fmt.Println(msg2)
+		}
+	}
+}
+
+
+/*
+    Buffered channel
+*/
+
+func main() {
+	ch := make(chan int, 2)
+	ch <- 100
+	fmt.Println(len(ch))
+
+	ch <- 200
+	fmt.Println(len(ch))
+
+	close(ch) // closeしないとfor文でエラーが発生
+	for c := range ch {
+		fmt.Println(c)
+	}
+}
+
+/*
+    context
+		デッドライン、キャンセルシグナル、その他のリクエストに対応した値を
+		APIの境界やプロセス間で伝達する
+		
+		例.
+    goroutineにタイムアウトを付け加えることができる
+*/
+
+func longProcess(ctx context.Context, ch chan string) {
+	fmt.Println("run")
+	time.Sleep(3 * time.Second)
+	fmt.Println("finish")
+	ch <- "result"
+}
+
+func main() {
+	ch := make(chan string)
+	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+	go longProcess(ctx, ch)
+
+	for {
+		select {
+		case <-ctx.Done(): // タイムアウトした際に実行される
+			fmt.Println(ctx.Err())
+			return
+		case <-ch: // 正常にchannnelから値が来れば実行される
+			fmt.Println("success")
+			return
+		}
+	}
+}
+
+
+
+func longProcess(ctx context.Context, ch chan string) {
+	fmt.Println("run")
+	time.Sleep(3 * time.Second)
+	fmt.Println("finish")
+	ch <- "result"
+}
+
+func main() {
+	ch := make(chan string)
+	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+	go longProcess(ctx, ch)
+
+CTXLOOP:
+	for {
+		select {
+		case <-ctx.Done():
+			fmt.Println(ctx.Err())
+			break CTXLOOP
+		case <-ch:
+			fmt.Println("success")
+			break CTXLOOP
+		}
+	}
+	fmt.Println("##################")
+}
+
+/*
+	semaphore
+	セマフォとは、コンピュータで並列処理を行う際、
+	同時に実行されているプログラム間で資源（リソース）の排他制御や同期を行う仕組みの一つ
+	当該資源のうち現在利用可能な数を表す値のこと
+*/
+
+/* セマフォの値が正でなければブロッキング（待機させる） */
+// 同時に走らせることができるgoroutineの数を指定
+var s *semaphore.Weighted = semaphore.NewWeighted(1)
+
+func longProcess(ctx context.Context) {
+	fmt.Println("関数自体は実行されている"
+	// セマフォを一つ減らす（専有）
+	if err := s.Acquire(ctx, 1); err != nil {
+		fmt.Println(err)
+		return
+	}
+	// 専有していたセマフォを一つ戻す（開放）
+	defer s.Release(1)
+	fmt.Println("Wait...")
+	time.Sleep(1 * time.Second)
+	fmt.Println("Done")
+}
+
+func main() {
+	ctx := context.TODO()
+	go longProcess(ctx)
+	go longProcess(ctx)
+	go longProcess(ctx)
+	time.Sleep(5 * time.Second)
+}
+
+
+/* セマフォの値が正でなければ終了させる */
+var s *semaphore.Weighted = semaphore.NewWeighted(1)
+
+func longProcess(ctx context.Context) {
+	isAcquire := s.TryAcquire(1)
+	if !isAcquire {
+		fmt.Println("Could not get lock")
+		return
+	}
+	defer s.Release(1)
+	fmt.Println("Wait")
+	time.Sleep(1 * time.Second)
+	fmt.Println("Done")
+}
+
+func main() {
+	ctx := context.TODO()
+	go longProcess(ctx) // 実行
+	go longProcess(ctx) // 終了
+	go longProcess(ctx) // 終了
+	time.Sleep(5 * time.Second)
+	go longProcess(ctx) // 実行
+	time.Sleep(3 * time.Second)
+}
+
+
+
 
 
 /*
@@ -1141,3 +1325,33 @@ func main() {
 // *chan int
 // *int
 // *struct {}
+
+
+
+
+/*
+    パッケージ iniの使い方
+    configファイルの読み込み時に利用
+*/
+
+type ConfigList struct {
+	Port      int
+	DbName    string
+	SQLDriver string
+}
+
+var Config ConfigList
+
+func init() {
+	cfg, _ := ini.Load("config.ini")
+	Config = ConfigList{
+		Port:      cfg.Section("web").Key("port").MustInt(),
+		DbName:    cfg.Section("db").Key("driver").MustString("example.sql"),
+		SQLDriver: cfg.Section("db").Key("driver").String(),
+	}
+}
+
+func main() {
+	fmt.Printf("%T %v\n", Config.Port, Config.Port)
+	fmt.Printf("%T %v\n", Config.DbName, Config.DbName)
+	fmt.Printf("%T %v\n", Config.SQLDriver, Config.SQLDriver)
