@@ -1158,6 +1158,53 @@ func main() {
 	}
 }
 
+
+/*
+	Default Selection と for break
+*/
+
+// Default Selectionについて
+func main() {
+	tick := time.Tick(100 * time.Millisecond)
+	boom := time.After(500 * time.Millisecond)
+	for {
+		select {
+		case t := <-tick:
+			fmt.Println("tick.", t)
+		case <-boom:
+			fmt.Println("BOOM!")
+			return
+		default: // チャネルに何も送信されなければ実行
+			fmt.Println("    .")
+			time.Sleep(50 * time.Millisecond)
+		}
+	}
+}
+
+
+/*
+	Goto文
+*/
+
+func main() {
+	tick := time.Tick(100 * time.Millisecond)
+	boom := time.After(500 * time.Millisecond)
+OuterLoop: // break OuterLoopとすることで、途中で抜けられるようになる
+	for {
+		select {
+		case <-tick:
+			fmt.Println("tick.")
+		case <-boom:
+			fmt.Println("BOOM!")
+			break OuterLoop
+		default:
+			fmt.Println("    .")
+			time.Sleep(50 * time.Millisecond)
+		}
+	}
+	fmt.Println("######################")
+}
+
 /*
     context
 		デッドライン、キャンセルシグナル、その他のリクエストに対応した値を
