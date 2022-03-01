@@ -1184,6 +1184,7 @@ func main() {
 
 /*
 	Goto文
+	指定したラベルにジャンプする
 */
 
 func main() {
