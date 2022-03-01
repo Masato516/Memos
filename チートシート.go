@@ -1125,8 +1125,10 @@ func goroutine2(ch chan string) {
 func main() {
 	c1 := make(chan string)
 	c2 := make(chan string)
+
 	go goroutine1(c1)
 	go goroutine2(c2)
+	
 	for {
 		select {
 		case msg1 := <-c1:
