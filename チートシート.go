@@ -651,6 +651,41 @@ func main() {
 }
 
 
+/*
+	タイプアサーション
+*/
+
+func do(i interface{}) {
+	x := i.(int) // type assertion
+	x *= 2
+	fmt.Println(x)
+}
+
+func main() {
+	do(10)
+}
+
+
+/*
+	switch type文
+*/
+
+func do(i interface{}) {
+	switch i.(type) {
+	case int:
+		fmt.Println(2)
+	case string:
+		fmt.Println("!")
+	default:
+		fmt.Println("I don't know")
+	}
+}
+
+func main() {
+	do(10)
+	do("Mike")
+	do(true)
+}
 
 /*
     メソッド
