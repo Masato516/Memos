@@ -688,6 +688,56 @@ func main() {
 }
 
 /*
+	Stringer
+
+	Stringer インタフェースは、
+	stringとして表現することができる型
+	fmt パッケージ(と、多くのパッケージ)では、
+	変数を文字列で出力するためにこのインタフェースがあることを確認します。
+*/
+
+func main() {
+	mike := Person{"Mike", 22}
+	fmt.Println(mike) // My name is Mike.
+	fmt.Print(mike) // My name is Mike.
+	log.Println(mike) // 2022/03/01 23:58:31 My name is Mike.
+}
+
+
+/*
+	カスタムエラー
+	
+	参考：https://cs.opensource.google/go/go/+/refs/tags/go1.17.7:src/io/fs/fs.go;l=249;drc=refs%2Ftags%2Fgo1.17.7
+*/
+
+// エラー出力するためのstruct
+type UserNotFound struct {
+	Username string
+}
+
+// エラー内容
+func (e *UserNotFound) Error() string {
+	return fmt.Sprintf("User not found: %v", e.Username)
+}
+
+// エラーを起こす関数
+func errFunc() error {
+	ok := false
+	if !ok {
+		// errorを返す場合は、ポインタで返す！（ポインタでなくとも動作するが...）
+		return &UserNotFound{Username: "Mcgregor"}
+	}
+	return nil
+}
+
+func main() {
+	if err := errFunc(); err != nil {
+		fmt.Println(err)
+	}
+}
+
+
+/*
     メソッド
 		
 		対象の型を引数に取る関数の場合は，他の関数と名前衝突を防ぐため，
@@ -721,6 +771,9 @@ func main() {
 
 /*
     ポイントレシーバー
+		
+		ポインタレシーバ：ポインタとして引数で渡すので、関数内でオブジェクトの値を変更できる
+		値レシーバ：元の値とは別のコピーした値が関数に渡されるので元の値は変更はできない
 */
 
 // 値レシーバー
@@ -739,6 +792,76 @@ func main() {
 	v.Scale(10) // vのX,Yフィールドを10倍にする
 	fmt.Println(v.Area())
 }
+
+
+/*
+	コンストラクタ（デザインパターン）
+
+	Rubyでいうinitializeメソッドみたいなもの
+*/
+
+type Vertex struct {
+	x, y int
+}
+
+func New(x, y int) *Vertex {
+	return &Vertex{x, y}
+}
+
+func (v *Vertex) Area() int {
+	return v.x * v.y
+}
+
+func main() {
+	v := New(3, 4) // コンストラクタ
+	fmt.Println(v.Area())
+}
+
+
+/*
+	Embedded
+	
+	クラスの継承のような役割を行う
+*/
+
+type Vertex struct {
+	x, y int
+}
+
+func (v *Vertex) Scale(i int) {
+	v.x *= i
+	v.y *= i
+}
+
+func (v *Vertex) Area() int {
+	return v.x * v.y
+}
+
+type Vertex3D struct {
+	Vertex
+	z int
+}
+
+func (v *Vertex3D) Scale3D(i int) {
+	v.x *= i
+	v.y *= i
+	v.z *= i
+}
+
+func (v *Vertex3D) Area3D() int {
+	return v.x * v.y * v.z
+}
+
+func New(x, y, z int) *Vertex3D {
+	return &Vertex3D{Vertex{x, y}, z}
+}
+
+func main() {
+	v := New(1, 2, 3)
+	v.Scale3D(10)
+	fmt.Println(v.Area3D())
+}
+
 
 
 /*
