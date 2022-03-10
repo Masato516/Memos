@@ -1566,3 +1566,49 @@ func main() {
 	fmt.Printf("%T %v\n", Config.Port, Config.Port)
 	fmt.Printf("%T %v\n", Config.DbName, Config.DbName)
 	fmt.Printf("%T %v\n", Config.SQLDriver, Config.SQLDriver)
+}
+
+
+/*
+	サブコマンドの利用方法
+	https://github.com/google/subcommands
+*/
+
+func main() {
+	var intFlag int
+	flag.IntVar(&intFlag, "age", 0, "please specify -age flag")
+	flag.Parse()
+	fmt.Println("The age flag is ", intFlag)
+}
+
+func main() {
+	intFlag := flag.Int("n", 0, "please specify -n flag")
+	flag.Parse()
+	fmt.Println("The n flag is ", *intFlag)
+}
+
+
+func main() {
+	strFlag := flag.String("s", "デフォルト", "Please specify -s flag")
+	flag.Parse()
+	fmt.Println("The s flag is ", *strFlag)
+}
+
+func main() {
+	var strFlag string
+	flag.StringVar(&strFlag, "s", "デフォルト", "Please specify -s flag")
+	flag.Parse()
+	fmt.Printf("flag's type is %T\n", strFlag)
+	fmt.Println("The s flag is ", strFlag)
+}
+
+func main() {
+	command := flag.NewFlagSet("command name", flag.ExitOnError)
+	version := command.Bool("version", false, "Output version information and exit")
+
+	command.Parse(os.Args[1:])
+
+	if *version {
+		fmt.Fprintf(os.Stderr, "%s v0.0.1", command.Name())
+	}
+}
