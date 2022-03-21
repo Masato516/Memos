@@ -1197,6 +1197,26 @@ if err := t.Execute(os.Stdout, data); err != nil {
 <h1>Hello World</h1>
 
 
+/*
+	静的ファイル（CSS,JS）にアクセスできるようにする
+	↑がないと、<!DOCTYPE>で、Uncaught SyntaxError: Unexpected token 'を吐く
+*/
+
+// 例.
+http.HandleFunc("/", viewIndexHandler)
+// 以下１行を追加する必要あり
+http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+return http.ListenAndServe(fmt.Sprintf("%s:%d", config.Config.Address, config.Config.Port), nil)
+
+
+//// 詳細
+http.FileServer(http.Dir("path"))
+// pathにあるディレクトリをhandlerとして返す
+http.StripPrefix("path", handler)	
+// "path"より前を取り除いたpathを作成しhandlerに渡す
+http.Handle("path", handler)
+// pathという要求がきたらhandlerを返す
+
 
 /*
     goroutine と sync.WaitoGroup
@@ -1612,3 +1632,4 @@ func main() {
 		fmt.Fprintf(os.Stderr, "%s v0.0.1", command.Name())
 	}
 }
+
