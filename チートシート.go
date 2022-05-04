@@ -1512,7 +1512,84 @@ func main() {
 }
 
 
+/*
+		Mutex(Mutex Exclusion)
+		
+		複数のゴルーチンが実行されている時に同じ処理が衝突することがある
+		mutexを使用すると、1つのゴルーチンだけが処理コードにアクセスできるように
+		ロックして、処理の衝突を防ぐことができる
 
+		ミューテックスとは、コンピュータで並列処理を行う際、
+		同時に実行されているプログラム間で資源（リソース）の
+		排他制御や同期を行う仕組みの一つ
+		同時に一つのプログラムの流れのみが資源を占有し、他の使用を排除する方法
+*/
+
+// 一定確率で例外が発生
+// cに同時に1つの変数にアクセスしようとすると衝突するため
+func main() {
+	c := make(map[string]int)
+	go func() {
+		for i := 0; i < 500; i++ {
+			c["somekey"] += 1
+		}
+	}()
+
+	go func() {
+		for i := 0; i < 500; i++ {
+			c["somekey"] += 1
+		}
+	}()
+
+	time.Sleep(time.Second)
+	fmt.Println(c, c["somekey"])
+}
+
+
+// Mutexを使うことで、衝突を起こさないようにできる
+
+// Mutexを持つstructでmapをwrap
+type SafeCounter struct {
+	v   map[string]int
+	mux sync.Mutex
+}
+
+func (c *SafeCounter) Inc(key string) {
+	// 一度に1つのゴルーチンだけがc.vのマップに
+	// アクセスできるようにロック
+	c.mux.Lock()
+	c.v[key]++
+	// マップの値をインクリメントしたあとに、ロックを解除
+	c.mux.Unlock()
+}
+
+func (c *SafeCounter) Value(key string) int {
+	// 一度に1つのゴルーチンだけがc.vのマップに
+	// アクセスできるようにロック
+	c.mux.Lock()
+	// マップの値にアクセス・値を返した後に、ロックを解除
+	defer c.mux.Unlock()
+	return c.v[key]
+}
+
+func main() {
+	// Mutexを持つstructを初期化
+	c := SafeCounter{v: make(map[string]int)}
+	go func() {
+		for i := 0; i < 1000; i++ {
+			c.Inc("somekey")
+		}
+	}()
+
+	go func() {
+		for i := 0; i < 1000; i++ {
+			c.Inc("somekey")
+		}
+	}()
+
+	time.Sleep(time.Second)
+	fmt.Println(c, c.Value("somekey"))
+}
 
 
 /*
@@ -1633,3 +1710,105 @@ func main() {
 	}
 }
 
+
+/*
+	テンプレート
+*/
+
+// htmlを共通化する例
+
+//// layout.html
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Drone App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div data-role="page">
+      <div data-role="header">
+        <a href="/" data-icon="home" data-dom-cache="false">Home</a>
+        <h1>Drone App</h1>
+      </div>
+      <div data-role="content">
+				// テンプレートを使用
+        {{ block "content" .}} {{ end}}
+      </div>
+    </div>
+  </body>
+</html>
+////
+
+//// index.html
+// テンプレートを使用
+{{ template "layout.html"}}
+// テンプレートを用意
+{{ define "content"}}
+<div align="center">
+  <h1>Drone App</h1>
+  <img width="100%" src="/static/img/Drone.png">
+</div>
+<ul data-role="listview">
+  <li><a href="/controller/">Controller</a></li>
+  <li><a href="/games/shake/">Shake game</a></li>
+</ul>
+{{ end }}
+////
+
+//// controller.html
+// テンプレートを使用
+{{ template "layout.html"}}
+// テンプレートを用意
+{{ define "content"}}
+<style>
+  .controller-box {
+    text-align: center;
+  }
+</style>
+
+<script>
+  function sendCommand(command, params={}){
+    params['command'] = command
+    $.post("/api/command/", params).done(function(json){
+      console.log({action: 'sendCommand', params: params, status: 'success'})
+    }, 'json').fail(function (json) {
+      console.log({action: 'sendCommand', params: params, json: json, status: 'fail'})
+    }, 'json')
+  }
+</script>
+
+<div class="controller-box">
+  <div data-roler="controlgroup" data-type="horizontal">
+    <a href="#" data-role="button" onclick="sendCommand('ceaseRotation'); return false;">cease</a>
+    <a href="#" data-role="button" onclick="sendCommand('takeOff'); return false;">Take off</a>
+    <a href="#" data-role="button" onclick="sendCommand('land'); return false;">Land</a>
+    <a href="#" data-role="button" onclick="sendCommand('hover'); return false;">Hover</a>
+  </div>
+</div>
+{{ end }}
+////
+
+//// テンプレートをパース
+func getTemplate(temp string) (*template.Template, error) {
+	return template.ParseFiles("app/views/layout.html", temp)
+}
+
+func viewIndexHandler(w http.ResponseWriter, r *http.Request) {
+	t, err := getTemplate("app/views/index.html")
+	if err != nil {
+		panic(err.Error())
+	}
+	if err := t.Execute(w, nil); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func viewControllerHandler(w http.ResponseWriter, r *http.Request) {
+	t, err := getTemplate("app/views/controller.html")
+	if err != nil {
+		panic(err.Error())
+	}
+	if err := t.Execute(w, nil); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
