@@ -1,5 +1,11 @@
 package main
 
+import (
+	"fmt"
+	"sync"
+	"time"
+)
+
 // func main() {
 // 	var p *int = new(int)
 // 	fmt.Println(p)
@@ -435,4 +441,110 @@ package main
 // 		fmt.Fprintf(os.Stderr, "%s v0.0.1", command.Name())
 // 	}
 // }
-// 
+//
+
+// func main() {
+// 	subcommands.Register(subcommands.HelpCommand(), "デフォルトコマンド")
+// 	subcommands.Register(subcommands.FlagsCommand(), "デフォルトコマンド")
+// 	subcommands.Register(subcommands.CommandsCommand(), "デフォルトコマンド")
+// 	subcommands.Register(&commands.printCmd{}, "作成コマンド")
+// 	// 出力結果.
+// 	// Subcommands for デフォルトコマンド:
+// 	// 	commands         list all command names
+// 	// 	flags            describe all known top-level flags
+// 	// 	help             describe subcommands and their syntax
+
+// 	// Subcommands for 作成コマンド:
+// 	// 	print            Print args to stdout.
+
+// 	flag.Parse()
+// 	ctx := context.Background()
+// 	os.Exit(int(subcommands.Execute(ctx)))
+// }
+
+// func main() {
+// 	match, _ := regexp.MatchString("a([a-z]+)e", "apple")
+// 	fmt.Println(match) //=> true
+
+// 	// 正規表現を複数利用する場合
+// 	r := regexp.MustCompile("a([a-z]+)e")
+// 	ms := r.MatchString("apple")
+// 	fmt.Println(ms)
+
+// 	r2 := regexp.MustCompile("^/(edit|save|view)/([a-zA-Z0-9]+)$")
+// 	fs := r2.FindString("/view/test")
+// 	fmt.Println(fs) //=> /view/test
+
+// 	fss := r2.FindStringSubmatch("/view/test")
+// 	fmt.Println(fss, fss[0], fss[1], fss[2])
+// 	//=> [/view/test view test] /view/test view test
+
+// 	fss = r2.FindStringSubmatch("/edit/test")
+// 	fmt.Println(fss, fss[0], fss[1], fss[2])
+// 	//=> [/edit/test edit test] /edit/test edit test
+
+// 	fss = r2.FindStringSubmatch("/save/test")
+// 	fmt.Println(fss, fss[0], fss[1], fss[2])
+// 	//=> [/save/test save test] /save/test save test
+// }
+
+// func main() {
+// 	c := make(map[string]int)
+// 	go func() {
+// 		for i := 0; i < 500; i++ {
+// 			c["somekey"] += 1
+// 		}
+// 	}()
+
+// 	go func() {
+// 		for i := 0; i < 500; i++ {
+// 			c["somekey"] += 1
+// 		}
+// 	}()
+
+// 	time.Sleep(time.Second)
+// 	fmt.Println(c, c["somekey"])
+// }
+
+// Mutexを持つstructでmapをwrap
+type SafeCounter struct {
+	v   map[string]int
+	mux sync.Mutex
+}
+
+func (c *SafeCounter) Inc(key string) {
+	// 一度に1つのゴルーチンだけがc.vのマップに
+	// アクセスできるようにロック
+	c.mux.Lock()
+	c.v[key]++
+	// マップの値をインクリメントしたあとに、ロックを解除
+	c.mux.Unlock()
+}
+
+func (c *SafeCounter) Value(key string) int {
+	// 一度に1つのゴルーチンだけがc.vのマップに
+	// アクセスできるようにロック
+	c.mux.Lock()
+	// マップの値にアクセス・値を返した後に、ロックを解除
+	defer c.mux.Unlock()
+	return c.v[key]
+}
+
+func main() {
+	// Mutexを持つstructを初期化
+	c := SafeCounter{v: make(map[string]int)}
+	go func() {
+		for i := 0; i < 1000; i++ {
+			c.Inc("somekey")
+		}
+	}()
+
+	go func() {
+		for i := 0; i < 1000; i++ {
+			c.Inc("somekey")
+		}
+	}()
+
+	time.Sleep(time.Second)
+	fmt.Println(c, c.Value("somekey"))
+}
