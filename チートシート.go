@@ -1,3 +1,8 @@
+/*
+	Go言語の仕様書
+	https://go.dev/ref/spec
+*/
+
 /* 
     関数の定義
     キャメルケースで命名
@@ -620,7 +625,8 @@ fmt.Printf("%T %v\n", v6, v6)
 
 v7 := &Vertex{}
 fmt.Printf("%T %v\n", v7, v7)
-
+// fieldはあってもなくてもOK
+v7 := &Vertex{X: 1, Y: 2}
 
 /*
     structの参照・値渡し
@@ -1839,7 +1845,7 @@ func (b *Block) MarshalJSON() ([]byte, error) {
 
 
 /*
-	数値の型について
+	数値のデータ型について
 	https://go.dev/ref/spec#:~:text=a%20defined%20type.-,Numeric%20types,-An%20integer%2C%20floating
 */
 
@@ -1863,3 +1869,48 @@ complex128  the set of all complex numbers with float64 real and imaginary parts
 
 byte        alias for uint8
 rune        alias for int32
+
+
+
+/*
+	float型のprintfの出力
+*/
+
+// width: 数値の左のスペースの数（default 1）
+// precision: 表示する小数点の位
+/*
+	%f     default width, default precision
+	%9f    width 9, default precision
+	%.2f   default width, precision 2
+	%9.2f  width 9, precision 2
+	%9.f   width 9, precision 0
+*/
+
+// 使用例.
+func main() {
+	f :=  5.01234567890123456789
+
+	// default width, default precision
+	fmt.Printf("Float 1: %f \n",f)
+
+	// width 9, default precision
+	fmt.Printf("Float 2: %9f \n",f)
+
+	// default width, precision 2
+	fmt.Printf("Float 3: %.2f \n",f)
+
+	// width 9, precision 2
+	fmt.Printf("Float 4: %9.2f \n",f)
+
+	// width 9, precision 0
+	fmt.Printf("Float 5: %9.f \n",f)
+}
+
+/*
+	$ go run example.go
+		=>Float 1: 5.012346 
+		=	Float 2:  5.012346 
+		=	Float 3: 5.01 
+		=	Float 4:      5.01 
+		=	Float 5:         5 
+*/
