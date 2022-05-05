@@ -1812,3 +1812,28 @@ func viewControllerHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
+
+
+
+/*
+	JSON
+*/
+
+// json.Marshalをオーバーライドする
+// 使用例: 
+// structのフィールドがプライベート（小文字）だと{}しか返されないので、
+// オーバーライドする必要がある
+func (b *Block) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Nonce        int      `json:"nonce"`
+		PreviousHash [32]byte `json:"previous_hash"`
+		Timestamp    int64    `json:"timestamp"`
+		Transactions []string `json:"transactions"`
+	}{
+		Nonce:        b.nonce,
+		PreviousHash: b.previousHash,
+		Timestamp:    b.timestamp,
+		Transactions: b.transactions,
+	})
+}
+
