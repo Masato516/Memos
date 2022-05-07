@@ -1914,3 +1914,12 @@ func main() {
 		=	Float 4:      5.01 
 		=	Float 5:         5 
 */
+
+
+
+/*
+	compiler error
+*/
+
+// no result values expected
+//=> 引数の型の記述忘れ
