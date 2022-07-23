@@ -86,6 +86,8 @@ u
 # Undo redo
 control + r
 
+
+
 ### 検索
 
 # 検索
