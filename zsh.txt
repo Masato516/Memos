@@ -1,0 +1,82 @@
+### zshのコマンド操作
+
+# 直近のコマンドを実行
+!<command> ex) !source
+
+# 直前のコマンドを実行
+!!
+
+# Historyのコマンド検索
+control + r
+
+
+## カーソル移動
+
+# カーソルを先頭に移動
+control + a
+
+# カーソルから行末まで削除
+control + k
+
+# カーソルを行末へ
+control + e
+
+# カーソルを１文字戻る
+control + b
+
+# カーソルを１文字進める
+control + f
+
+# カーソル位置の文字を削除
+control + d
+
+
+
+
+# 新しいタブの作成
+command + t
+
+# タブの削除
+command + w (cotrol + d)
+
+# タブの移動
+command + →← or 数字
+
+# クリップボードの履歴の呼び出し
+command + shift + h
+
+# 検索
+command + f
+
+# 拡大・縮小
+command + +/-
+
+# フルスクリーンと解除
+command + enter
+
+
+### zshの設定
+($vim ~/.zshrc)
+
+# 音を鳴らさない
+setopt no_beep
+
+# ディレクトリの移動にpushd
+setopt auto_pushd
+
+# 重複は削除
+setopt pushd_ignore_dups
+
+# 一致するディレクトリにcdなしで移動
+setopt auto_cd
+
+# 直近と同じコマンドは履歴に追加しない
+setopt hist_ignore_dups
+
+# 他のzshで履歴を共有する
+setopt share_history
+
+# 即座に履歴を保存する
+setopt inc_append_history
+
+
