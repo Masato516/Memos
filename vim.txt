@@ -58,6 +58,9 @@ set hlsearch
 set clipboard=unnamed
 
 
+## vim-plug
+https://github.com/junegunn/vim-plug
+
 
 
 ### ファイル内の操作
