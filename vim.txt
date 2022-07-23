@@ -1,0 +1,219 @@
+# Vim configの場所
+~/.vimrc
+
+# NeoVim configの場所
+~/.config/nvim/init.vim
+
+
+
+## nvimのaliasの記述(~/.zshrc)
+## vimのコマンドを上書き
+
+alias vi="nvim"
+
+alias vim="nvim"
+
+alias view="nvim -R"
+
+$ exec zsh
+
+
+
+## vimのhistory設定方法
+
+vim ~/.zshrc
+export HISTFILE=~/.zsh_history
+export HISTSIZE=10000
+export SAVEHIST=10000
+
+
+
+## vimのconfig設定
+($ vim ~/.config/nvim/init.vim)
+
+# 以下を追加
+
+# コマンドの際にはzshを使う
+set shell=/bin/zsh
+
+# Indentの幅
+set shiftwidth=4
+
+# タブに変換されるサイズ
+set tabstop=4
+
+# タブの入力の際にスペース
+set expandtab
+
+# ワードラッピングなし
+set textwidth=0
+
+# 自動インデント
+set autoindent # :set pasteで解除可能
+
+# Searchのハイライト
+set hlsearch
+
+# クリップボードへの登録
+set clipboard=unnamed
+
+
+
+
+### ファイル内の操作
+
+# 名前をつけて保存
+:w ファイル名
+
+# 次の文字からInsert mode
+a
+
+# １文字削除
+x
+
+# １行削除(コピー可能)
+dd
+
+# 単語の削除
+dw
+
+# ２行削除
+2dd
+
+# Undo
+u
+
+# Undo redo
+control + r
+
+### 検索
+
+# 検索
+/{pattern} ex) /test
+
+# 次の検索結果に移動
+n
+
+# 前の検索結果に移動
+N
+
+# 置換
+R
+
+# 単語削除 (Rよりも単語削除をよく使うケースが多い)
+dw
+
+# 一括置換
+:%s/search/replace/g
+
+# 確認しながら置換
+:%s/search/replace/gc
+
+
+
+
+### ファイル内の移動
+
+# ファイルの先頭に移動
+:1 or gg
+
+# ファイルの最後に移動
+G
+
+# 移動前に戻る
+CTRL + o
+
+
+
+
+### コピー＆ペースト
+
+# １行コピー
+yy (Normal mode)
+
+# 下にペースト
+p (Normal mode)
+
+# 現在行にペースト
+P (Normal mode)
+
+# 2行コピー
+2yy (Normal mode)
+
+# Repeat
+. 
+
+
+
+# 選択行の下に空白を入れ、インサートモード
+o
+
+# 選択行に空白を入れ、インサートモード
+O
+
+# 行の連結
+J
+
+# 右にインデントを移動
+>
+
+# 左にインデントを移動
+<
+
+# カーソル指定コピー
+v (visual mode)移動してからy(yank)
+
+# 行番号を表示する
+:set number
+
+# 10行目に移動
+:10
+
+# 行末に移動
+$(shift + 4)
+
+# 先頭に移動
+0
+
+# インデントの先頭に移動
+^
+
+# 段落毎に上に移動
+{
+
+# 段落毎に下に移動
+}
+
+# セクション毎に上に移動
+[[
+
+# セクション毎に下に移動
+]]
+
+
+
+# visual block mode
+control + v
+
+# 行を選択
+j or k
+
+# 先頭に挿入する場合
+:norm l # or //
+
+# 行末に追加の場合
+:norm A # or //
+
+
+
+
+### command mode
+
+# command mode
+: or /
+
+# コマンド実行
+!python /tmp/a.py (command mode)
+
+# 前のコマンドを実行
+!!
